@@ -1,0 +1,226 @@
+/* 
+ * Custom styles for VocPr (Vocabulary Practice)
+ * Copyright (c) 2026 hungpv
+ * Licensed under the MIT License
+ */
+
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+.preserve-3d {
+    transform-style: preserve-3d;
+}
+
+.backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+    transform: rotateY(180deg);
+}
+
+/* Base transitions */
+.transition-transform {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 500ms;
+}
+
+.nav-button-transition {
+    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom shadow for cards */
+.shadow-soft {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+/* Animation for buttons */
+button:active {
+    transform: scale(0.95);
+}
+
+/* Selection highlight */
+/* Matching Game Styles */
+.matching-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.75rem;
+    font-weight: 500;
+}
+
+.matching-card.selected {
+    border-color: #B8881C !important;
+    background-color: #FBF6E3 !important;
+    color: #6F4E13 !important;
+    transform: scale(1.02);
+    box-shadow: 0 4px 6px -1px rgba(184, 136, 28, 0.15);
+}
+
+.matching-card.matched {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.9);
+}
+
+.matching-card.error {
+    border-color: #C24D2C !important;
+    background-color: #F7E8E0 !important;
+    color: #8B3318 !important;
+    animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes shake {
+
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}
+
+/* Page Transitions */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Home Button Style */
+.btn-home {
+    @apply flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-indigo-600 font-bold transition-colors;
+}
+
+/* Gamification & Modern UI Styles */
+.glassmorphism {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.dark .glassmorphism {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .matching-card {
+    background-color: #2C3E2D;
+    border-color: #4F6B3A;
+    color: #E8DBC8;
+}
+
+.dark .matching-card.selected {
+    border-color: #D4A017 !important;
+    background-color: rgba(212, 160, 23, 0.18) !important;
+    color: #E8C547 !important;
+}
+
+.dark .matching-card.error {
+    border-color: #C24D2C !important;
+    background-color: rgba(194, 77, 44, 0.20) !important;
+    color: #E07A56 !important;
+}
+
+/* Mascot Animations */
+.mascot-cheer {
+    animation: cheer 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    will-change: transform;
+}
+
+@keyframes cheer {
+    0%, 100% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-30px) scale(1.1) rotate(-10deg); }
+    50% { transform: translateY(-10px) scale(1.05) rotate(10deg); }
+    70% { transform: translateY(-20px) scale(1.1) rotate(-5deg); }
+}
+
+.mascot-warn {
+    animation: warn 0.8s ease-in-out both;
+    will-change: transform;
+}
+
+@keyframes warn {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+.mascot-error {
+    animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+    will-change: transform;
+}
+
+/* 3D Premium Mascot Styles */
+@keyframes mascot-float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+#mascot-img {
+    will-change: transform, filter;
+    animation: mascot-float 4s ease-in-out infinite;
+    transition: 
+        transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+        filter 0.4s ease;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
+    cursor: pointer;
+    /* Xử lý nền trắng nếu cần blend vào nền sáng */
+    mix-blend-mode: multiply; 
+}
+
+#mascot-img:hover {
+    animation-play-state: paused;
+    transform: scale(1.2) translateY(-15px) rotate(-5deg);
+    filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.2));
+}
+
+#mascot-img:active {
+    transform: scale(0.9);
+}

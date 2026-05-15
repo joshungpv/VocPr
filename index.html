@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocPr — Vocabulary Practice</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Theme: Đồng quê Việt Nam (SDD-SUB-20260515-20)
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            50: '#FBF6E3', 100: '#F5E9B8', 200: '#EFD98E', 300: '#E8C547',
+                            400: '#D4A017', 500: '#B8881C', 600: '#94691A', 700: '#6F4E13',
+                            800: '#4A340D', 900: '#2D1F07'
+                        },
+                        purple: {
+                            50: '#EEF3E3', 100: '#D9E4BC', 200: '#C5D8A4', 300: '#A8C672',
+                            400: '#8FAE5D', 500: '#7BA05B', 600: '#638449', 700: '#4F6B3A',
+                            800: '#3B5128', 900: '#2C3E2D'
+                        },
+                        slate: {
+                            50: '#F7F1E6', 100: '#E8DBC8', 200: '#D8C5A5', 300: '#C9B79C',
+                            400: '#A89070', 500: '#8B6F47', 600: '#705836', 700: '#5C4830',
+                            800: '#473627', 900: '#3D3530'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Chart.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300 min-h-screen font-sans">
+
+    <!-- Global Floating Elements -->
+    <button id="btn-dark-mode" onclick="window.toggleDarkMode()"
+        class="fixed top-4 right-4 w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:scale-110 transition-transform z-50">
+        <i class="fa-solid fa-moon dark:hidden text-xl"></i>
+        <i class="fa-solid fa-sun hidden dark:inline text-xl text-yellow-400"></i>
+    </button>
+
+    <div id="streak-container"
+        class="fixed top-4 left-4 bg-white dark:bg-slate-800 px-4 py-2 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2 z-50">
+        <img src="assets/bamboo_leaf.png" alt="Streak" class="w-6 h-6 animate-pulse">
+        <span id="streak-count" class="font-bold text-slate-700 dark:text-slate-200">0</span>
+    </div>
+
+    <!-- Mascot -->
+    <div id="mascot-container" class="fixed bottom-4 right-4 z-50 transition-transform duration-300 transform">
+        <div id="mascot"
+            class="filter drop-shadow-xl select-none cursor-pointer hover:scale-110 transition-transform origin-bottom">
+            <img id="mascot-img" src="assets/buffalo_mascot.png" alt="Mascot" class="w-24 h-24 object-contain">
+        </div>
+        <div id="mascot-bubble"
+            class="absolute bottom-full mb-2 right-0 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-sm font-bold px-4 py-2 rounded-2xl shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap border-2 border-indigo-100 dark:border-indigo-900">
+            Cố lên!
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="max-w-4xl mx-auto px-4 py-16 relative z-10">
+
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1
+                class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600 mb-3 drop-shadow-sm">
+                VocPr</h1>
+        </header>
+
+        <!-- Navigation / Mode Selector -->
+        <nav id="mode-selector" class="flex justify-center gap-4 mb-12">
+            <button id="btn-learn" onclick="switchMode('learn')"
+                class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 dark:shadow-none hover:scale-105 nav-button-transition flex items-center gap-2">
+                <i class="fa-solid fa-layer-group"></i> Học (Flashcards)
+            </button>
+            <button id="btn-test" onclick="switchMode('test')"
+                class="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-bold shadow-lg hover:scale-105 nav-button-transition border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-gamepad"></i> Kiểm tra (Test)
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Loading State -->
+            <div class="text-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                <p class="mt-4 text-slate-500">Đang chuẩn bị từ vựng...</p>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Data & Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="assets/vocab.js"></script>
+    <script src="assets/app.js"></script>
+</body>
+
+</html>
