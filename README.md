@@ -6,11 +6,11 @@
 
 ## Tiếng Việt
 
-Ứng dụng web học từ vựng tiếng Anh ngoại tuyến. Ứng dụng chạy hoàn toàn trên trình duyệt, không yêu cầu thiết lập máy chủ.
+Ứng dụng web học từ vựng đa ngôn ngữ ngoại tuyến. Hỗ trợ bất kỳ cặp ngôn ngữ nào (ví dụ: Anh-Việt, Trung-Nhật, v.v.) và chạy hoàn toàn trên trình duyệt, không yêu cầu thiết lập máy chủ.
 
 ### ✨ Các tính năng chính
 
-- 📖 **Chế độ Học (Flashcards):** Xem từ vựng và nghĩa tiếng Việt với hiệu ứng lật thẻ tương tác.
+- 📖 **Chế độ Học (Flashcards):** Xem từ vựng và nghĩa giữa hai ngôn ngữ bất kỳ với hiệu ứng lật thẻ tương tác.
 - 📝 **Chế độ Kiểm tra (Test):** Đa dạng các loại bài tập giúp củng cố trí nhớ:
   - Nhập liệu (Typing)
   - Trắc nghiệm (Multiple Choice)
@@ -18,7 +18,7 @@
 - ⚙️ **Cấu hình bài thi:** Tùy chỉnh số lượng câu hỏi mỗi bài kiểm tra (10, 20, 50, hoặc tất cả).
 - 📊 **Theo dõi lịch sử:** Tự động lưu kết quả bài thi và danh sách từ làm sai để ôn tập. Hỗ trợ tính năng xóa lịch sử học tập.
 - 📥 **Quản lý từ vựng (Nhập/Xuất hàng loạt):**
-  - Dễ dàng thêm hoặc cập nhật từ vựng bằng cách sao chép 2 cột (Tiếng Anh, Tiếng Việt) từ Excel/Google Sheets và dán vào phần nhập liệu.
+  - Dễ dàng thêm hoặc cập nhật từ vựng bằng cách sao chép 2 cột dữ liệu từ Excel/Google Sheets và dán vào phần nhập liệu.
   - Tự động nhận diện và bổ sung nghĩa mới nếu từ vựng đã tồn tại.
   - Xuất toàn bộ danh sách từ vựng hiện tại ra định dạng Excel (.tsv).
 
@@ -89,11 +89,11 @@ Dự án này được xây dựng với sự hỗ trợ đắc lực từ:
 
 ## English
 
-An offline web application for learning English vocabulary. The app runs entirely in the browser without the need for additional server setup.
+A universal, offline web application for learning vocabulary in any language pair. It runs entirely in the browser without the need for additional server setup.
 
 ### ✨ Key Features
 
-- 📖 **Learning Mode (Flashcards):** View vocabulary and Vietnamese meanings with click/flip card interactions.
+- 📖 **Learning Mode (Flashcards):** View vocabulary and meanings between any two languages with click/flip card interactions.
 - 📝 **Test Mode:** Various exercise types to reinforce memory:
   - Typing (Written)
   - Multiple Choice
@@ -101,7 +101,7 @@ An offline web application for learning English vocabulary. The app runs entirel
 - ⚙️ **Test Configuration:** Users can customize the number of questions per test (10, 20, 50, or all).
 - 📊 **History Tracking:** Automatically saves test results and incorrect words for review. Supports clearing study history.
 - 📥 **Vocabulary Management (Bulk Import / Export):**
-  - Easily add or update vocabulary in bulk by copying 2 columns (English, Vietnamese) from Excel/Google Sheets and pasting them into the import section.
+  - Easily add or update vocabulary in bulk by copying any 2 columns of data from Excel/Google Sheets and pasting them into the import section.
   - Automatically recognizes and adds new meanings if the word already exists.
   - Export the entire current vocabulary list to Excel (.tsv) format.
 
