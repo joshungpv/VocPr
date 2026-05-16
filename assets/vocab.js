@@ -1,43 +1,43 @@
 // Vocabulary data for VocPr
 window.VOCAB_DATA = [
   {
-    "en": "different (adj)",
-    "vi": "khác, khác biệt"
+    "t1": "different (adj)",
+    "t2": "khác, khác biệt"
   },
   {
-    "en": "ancient (adj)",
-    "vi": "cổ xưa"
+    "t1": "ancient (adj)",
+    "t2": "cổ xưa"
   },
   {
-    "en": "technology (n)",
-    "vi": "công nghệ"
+    "t1": "technology (n)",
+    "t2": "công nghệ"
   },
   {
-    "en": "business (n)",
-    "vi": "việc kinh doanh"
+    "t1": "business (n)",
+    "t2": "việc kinh doanh"
   },
   {
-    "en": "influencer (n)",
-    "vi": "người có ảnh hưởng"
+    "t1": "influencer (n)",
+    "t2": "người có ảnh hưởng"
   },
   {
-    "en": "goal (n)",
-    "vi": "mục tiêu"
+    "t1": "goal (n)",
+    "t2": "mục tiêu"
   },
   {
-    "en": "amazing (adj)",
-    "vi": "tuyệt vời"
+    "t1": "amazing (adj)",
+    "t2": "tuyệt vời"
   },
   {
-    "en": "wildlife (n)",
-    "vi": "động vật hoang dã"
+    "t1": "wildlife (n)",
+    "t2": "động vật hoang dã"
   },
   {
-    "en": "success (n)",
-    "vi": "thành công"
+    "t1": "success (n)",
+    "t2": "thành công"
   },
   {
-    "en": "protect (v)",
-    "vi": "bảo vệ"
+    "t1": "protect (v)",
+    "t2": "bảo vệ"
   }
 ];

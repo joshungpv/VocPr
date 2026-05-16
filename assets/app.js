@@ -25,32 +25,252 @@ let currentState = {
     },
 
     // Preferences
-    preferredTestSize: 20
+    preferredTestSize: 20,
+
+    // Multilingual Config
+    langConfig: {
+        l1: 'English',
+        l2: 'Vietnamese',
+        uiLang: 'vi', // 'en' | 'vi'
+        ignoreBase: false,
+        pendingL1: '',
+        pendingL2: ''
+    },
+
+    // Import Review State
+    pendingVocab: [], // [{ t1, t2, status: 'new' | 'update' | 'skip' }]
+    reviewDisplayCount: 50
 };
+
+const I18N_STRINGS = {
+    en: {
+        ready: "Ready?",
+        choose_test_size: "Choose the number of questions to start the test.",
+        all: "All",
+        learn_new: "Learn New",
+        start_test: "Start Test",
+        manage_vocab: "Manage Vocabulary",
+        import_desc: "Enter language names and paste 2 columns from Excel/Sheets:",
+        lang_1: "Language 1",
+        lang_2: "Language 2",
+        export_excel: "Export Excel",
+        add_insert: "Add (Insert)",
+        review_count: "You have {n} words to review!",
+        review_desc: "These are words you answered incorrectly in the previous test.",
+        memorized: "Memorized",
+        review_now: "Review Now",
+        learning_stats: "Learning Statistics",
+        clear_history: "Clear History",
+        no_history: "No test data available yet.",
+        score_percent: "Score (%)",
+        home: "Home",
+        word_progress: "Word {n} / {m}",
+        flip_to: "Flip to {lang}",
+        back: "Back",
+        next: "Next",
+        submit: "Submit",
+        matching_prompt: "Match the corresponding pairs",
+        enter_answer: "Enter answer...",
+        matching_done: "✨ Matching complete! Click \"Next\"",
+        mascot_cheer: "Great job!",
+        mascot_error: "Wrong!",
+        mascot_warn: "Time to study, friend!",
+        go_home: "Go Home",
+        try_again: "Try Again",
+        result_great: "Excellent!",
+        result_try_harder: "Need to try harder!",
+        result_desc: "You answered correctly {n} / {m} questions.",
+        
+        // Import Review
+        import_review_title: "Review Changes",
+        import_review_desc: "Please review the data before final import. {n} words total.",
+        col_word: "Word",
+        col_meaning: "Meaning",
+        col_status: "Status",
+        status_new: "New",
+        status_update: "Update",
+        status_skip: "Skip",
+        confirm: "Confirm Import",
+        cancel: "Cancel",
+
+        // Factory Reset
+        factory_reset: "Factory Reset",
+        reset_confirm: "WARNING: This will delete ALL custom vocabulary, history, and settings. The app will return to its initial default state (with sample vocabulary). Proceed?",
+        ignore_base_vocab: "Ignore default vocabulary",
+        no_vocab_warning: "No vocabulary found. Please add new words or check your settings.",
+        no_vocab_test_warning: "No valid vocabulary to start the test."
+    },
+    vi: {
+        ready: "Sẵn sàng chưa?",
+        choose_test_size: "Chọn số lượng câu hỏi để bắt đầu bài kiểm tra.",
+        all: "Tất cả",
+        learn_new: "Học từ mới",
+        start_test: "Bắt đầu Test",
+        manage_vocab: "Quản lý từ vựng",
+        import_desc: "Nhập tên ngôn ngữ và dán 2 cột từ Excel/Sheets:",
+        lang_1: "Ngôn ngữ 1",
+        lang_2: "Ngôn ngữ 2",
+        export_excel: "Xuất Excel",
+        add_insert: "Thêm (Insert)",
+        review_count: "Bạn có {n} từ cần ôn lại!",
+        review_desc: "Đây là những từ bạn đã trả lời sai ở bài test trước.",
+        memorized: "Đã nhớ",
+        review_now: "Ôn ngay",
+        learning_stats: "Thống kê học tập",
+        clear_history: "Xóa lịch sử",
+        no_history: "Chưa có dữ liệu bài test nào.",
+        score_percent: "Điểm số (%)",
+        home: "Trang chủ",
+        word_progress: "Từ {n} / {m}",
+        flip_to: "Lật sang {lang}",
+        back: "Quay lại",
+        next: "Tiếp theo",
+        submit: "Nộp bài",
+        matching_prompt: "Ghép các cặp từ tương ứng",
+        enter_answer: "Nhập đáp án...",
+        matching_done: "✨ Đã ghép xong! Bấm \"Tiếp theo\"",
+        mascot_cheer: "Giỏi quá!",
+        mascot_error: "Sai rồi!",
+        mascot_warn: "Ôn bài đi bạn ơi!",
+        go_home: "Về trang chủ",
+        try_again: "Làm lại bài khác",
+        result_great: "Tuyệt vời!",
+        result_try_harder: "Cần cố gắng hơn!",
+        result_desc: "Bạn đã trả lời đúng {n} / {m} câu.",
+
+        // Import Review
+        import_review_title: "Kiểm tra dữ liệu",
+        import_review_desc: "Vui lòng xem lại dữ liệu trước khi lưu chính thức. Tổng cộng {n} dòng.",
+        col_word: "Từ gốc",
+        col_meaning: "Nghĩa",
+        col_status: "Trạng thái",
+        status_new: "Mới",
+        status_update: "Cập nhật",
+        status_skip: "Bỏ qua",
+        confirm: "Xác nhận Lưu",
+        cancel: "Hủy bỏ",
+
+        // Factory Reset
+        factory_reset: "Xóa sạch dữ liệu (Reset)",
+        reset_confirm: "CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ từ vựng bạn đã thêm, lịch sử và cài đặt. Ứng dụng sẽ quay về trạng thái mặc định ban đầu (có từ vựng mẫu). Bạn có chắc chắn không?",
+        ignore_base_vocab: "Bỏ qua từ vựng mặc định",
+        no_vocab_warning: "Không có từ vựng nào để học. Vui lòng thêm từ mới hoặc kiểm tra cài đặt.",
+        no_vocab_test_warning: "Không có từ vựng nào hợp lệ để bắt đầu bài kiểm tra."
+    }
+};
+
+/**
+ * i18n Translation Helper
+ */
+function t(key, params = {}) {
+    const lang = currentState.langConfig.uiLang || 'vi';
+    let str = I18N_STRINGS[lang][key] || key;
+    
+    // Simple param replacement
+    for (const p in params) {
+        str = str.replace(`{${p}}`, params[p]);
+    }
+    return str;
+}
+
+/**
+ * Toggle UI Language
+ */
+function toggleUILang() {
+    const current = currentState.langConfig.uiLang || 'vi';
+    const next = current === 'vi' ? 'en' : 'vi';
+    currentState.langConfig.uiLang = next;
+    
+    // Persist
+    localStorage.setItem('vocab_lang_config', JSON.stringify(currentState.langConfig));
+    
+    // Update UI button text if it exists (in index.html)
+    const btnLang = document.getElementById('btn-lang');
+    if (btnLang) btnLang.textContent = next.toUpperCase();
+    
+    render();
+}
+window.toggleUILang = toggleUILang;
+
+/**
+ * Helper to migrate legacy en/vi objects to t1/t2
+ */
+function migrateLegacyData(item) {
+    if (item.en !== undefined && item.t1 === undefined) {
+        const newItem = {
+            ...item,
+            t1: item.en,
+            t2: item.vi
+        };
+        delete newItem.en;
+        delete newItem.vi;
+        return newItem;
+    }
+    return item;
+}
 
 /**
  * Initialize the app
  */
 function init() {
     if (window.VOCAB_DATA) {
+        // Load Language Config
+        const savedConfig = localStorage.getItem('vocab_lang_config');
+        if (savedConfig) {
+            try {
+                // Merge with default config to preserve new keys like ignoreBase
+                currentState.langConfig = { ...currentState.langConfig, ...JSON.parse(savedConfig) };
+                // Ensure uiLang exists
+                if (!currentState.langConfig.uiLang) {
+                    const isVi = navigator.language.startsWith('vi');
+                    currentState.langConfig.uiLang = isVi ? 'vi' : 'en';
+                }
+            } catch (e) {
+                console.error("Failed to parse lang config", e);
+            }
+        } else {
+            // New user: detect browser language
+            const isVi = navigator.language.startsWith('vi');
+            currentState.langConfig.uiLang = isVi ? 'vi' : 'en';
+        }
+
         // Deduplicate and merge VOCAB_DATA with custom_vocab
         const vocabMap = new Map();
         
-        // Add base vocab first
-        window.VOCAB_DATA.forEach(item => {
-            vocabMap.set(item.en.toLowerCase().trim(), { ...item });
-        });
+        // Add base vocab first if not ignored
+        if (!currentState.langConfig.ignoreBase) {
+            window.VOCAB_DATA.forEach(item => {
+                const migrated = migrateLegacyData(item);
+                vocabMap.set(migrated.t1.toLowerCase().trim(), migrated);
+            });
+        }
 
         // Load custom vocab and override/merge
         const customVocabRaw = localStorage.getItem('custom_vocab');
         if (customVocabRaw) {
             try {
-                const customVocab = JSON.parse(customVocabRaw);
+                let customVocab = JSON.parse(customVocabRaw);
+                
+                // RUNTIME MIGRATION
+                let needsReSave = false;
+                customVocab = customVocab.map(item => {
+                    if (item.en && !item.t1) {
+                        needsReSave = true;
+                        return migrateLegacyData(item);
+                    }
+                    return item;
+                });
+
+                if (needsReSave) {
+                    localStorage.setItem('custom_vocab', JSON.stringify(customVocab));
+                    console.log("Custom vocab migrated to new schema.");
+                }
+
                 customVocab.forEach(item => {
-                    vocabMap.set(item.en.toLowerCase().trim(), { ...item });
+                    vocabMap.set(item.t1.toLowerCase().trim(), { ...item });
                 });
             } catch (e) {
-                console.error("Failed to parse custom_vocab", e);
+                console.error("Failed to parse/migrate custom_vocab", e);
             }
         }
 
@@ -74,6 +294,10 @@ function init() {
         
         // Init Streak
         updateStreak();
+
+        // Init UI Lang Button
+        const btnLang = document.getElementById('btn-lang');
+        if (btnLang) btnLang.textContent = (currentState.langConfig.uiLang || 'vi').toUpperCase();
     } else {
         console.error("VOCAB_DATA not found!");
     }
@@ -88,6 +312,29 @@ function toggleDarkMode() {
     localStorage.setItem('vocab_theme', isDark ? 'dark' : 'light');
 }
 window.toggleDarkMode = toggleDarkMode;
+
+function factoryReset() {
+    if (confirm(t('reset_confirm'))) {
+        localStorage.clear();
+        // Clear in-memory state to prevent leakage before reload completes
+        currentState.vocab = [];
+        currentState.history = [];
+        currentState.incorrectWords = [];
+        
+        // Force immediate clean reload
+        window.location.href = window.location.pathname;
+    }
+}
+window.factoryReset = factoryReset;
+
+function toggleIgnoreBase(checked) {
+    currentState.langConfig.ignoreBase = checked;
+    localStorage.setItem('vocab_lang_config', JSON.stringify(currentState.langConfig));
+    // Re-initialize to reflect changes without full reload if possible, 
+    // but reload is safer to ensure all state is consistent
+    window.location.reload();
+}
+window.toggleIgnoreBase = toggleIgnoreBase;
 
 function updateStreak() {
     const today = new Date().toLocaleDateString('vi-VN');
@@ -221,6 +468,12 @@ function startNewTest(onlyIncorrect = false) {
         pool = currentState.vocab.filter(w => currentState.incorrectWords.includes(w.id));
     }
 
+    if (!pool || pool.length === 0) {
+        alert(t('no_vocab_test_warning'));
+        switchMode('home');
+        return;
+    }
+
     const shuffledPool = shuffle([...pool]);
     
     // Use preferred size, capped by available words
@@ -241,14 +494,14 @@ function startNewTest(onlyIncorrect = false) {
 function generateQuestion(word, pool) {
     const types = ['written', 'mcq', 'matching'];
     const type = types[Math.floor(Math.random() * types.length)];
-    const direction = Math.random() > 0.5 ? 'en-vi' : 'vi-en';
+    const direction = Math.random() > 0.5 ? 't1-t2' : 't2-t1';
 
     const q = {
         wordId: word.id,
         type: type,
         direction: direction,
-        prompt: direction === 'en-vi' ? word.en : word.vi,
-        correct: direction === 'en-vi' ? word.vi : word.en
+        prompt: direction === 't1-t2' ? word.t1 : word.t2,
+        correct: direction === 't1-t2' ? word.t2 : word.t1
     };
 
     if (type === 'mcq') {
@@ -256,7 +509,7 @@ function generateQuestion(word, pool) {
             .filter(w => w.id !== word.id)
             .sort(() => 0.5 - Math.random())
             .slice(0, 3)
-            .map(w => direction === 'en-vi' ? w.vi : w.en);
+            .map(w => direction === 't1-t2' ? w.t2 : w.t1);
 
         q.options = shuffle([q.correct, ...distractors]);
     }
@@ -272,8 +525,8 @@ function generateQuestion(word, pool) {
         const set = [word, ...others];
         q.pairs = set.map(w => ({
             id: w.id,
-            left: direction === 'en-vi' ? w.en : w.vi,
-            right: direction === 'en-vi' ? w.vi : w.en
+            left: direction === 't1-t2' ? w.t1 : w.t2,
+            right: direction === 't1-t2' ? w.t2 : w.t1
         }));
 
         // Pre-shuffle columns for the UI
@@ -301,6 +554,8 @@ function render() {
         renderTestMode(mainContent);
     } else if (currentState.mode === 'result') {
         renderResultMode(mainContent);
+    } else if (currentState.mode === 'import_review') {
+        renderImportReview(mainContent);
     } else {
         renderHome(mainContent);
     }
@@ -333,7 +588,7 @@ function renderChart() {
         data: {
             labels: data.map(d => d.date),
             datasets: [{
-                label: 'Điểm số (%)',
+                label: t('score_percent'),
                 data: data.map(d => d.score),
                 borderColor: '#6366f1',
                 backgroundColor: 'rgba(99, 102, 241, 0.2)',
@@ -363,8 +618,8 @@ function renderHome(container) {
     container.innerHTML = `
         <div class="flex flex-col gap-6">
             <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 text-center glassmorphism">
-                <h2 class="text-3xl font-black text-slate-700 dark:text-slate-100">Sẵn sàng chưa?</h2>
-                <p class="text-slate-500 dark:text-slate-400 mt-2 mb-6 font-medium">Chọn số lượng câu hỏi để bắt đầu bài kiểm tra.</p>
+                <h2 class="text-3xl font-black text-slate-700 dark:text-slate-100">${t('ready')}</h2>
+                <p class="text-slate-500 dark:text-slate-400 mt-2 mb-6 font-medium">${t('choose_test_size')}</p>
                 
                 <div class="flex justify-center gap-3 mb-8 flex-wrap">
                     ${[10, 20, 50, 'all'].map(size => `
@@ -373,28 +628,45 @@ function renderHome(container) {
                             ${currentState.preferredTestSize == size 
                                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' 
                                 : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'}">
-                            ${size === 'all' ? '<i class="fa-solid fa-infinity"></i> Tất cả' : size}
+                            ${size === 'all' ? `<i class="fa-solid fa-infinity"></i> ${t('all')}` : size}
                         </button>
                     `).join('')}
                 </div>
 
                 <div class="flex justify-center gap-4">
-                     <button onclick="switchMode('learn')" class="px-8 py-3 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-100 dark:border-slate-600 rounded-2xl font-bold shadow-sm hover:scale-105 transition"><i class="fa-solid fa-book-open"></i> Học từ mới</button>
-                     <button onclick="startNewTest()" class="px-8 py-3 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 dark:shadow-none hover:scale-105 hover:bg-emerald-600 transition"><i class="fa-solid fa-play"></i> Bắt đầu Test</button>
+                     <button onclick="switchMode('learn')" class="px-8 py-3 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-100 dark:border-slate-600 rounded-2xl font-bold shadow-sm hover:scale-105 transition"><i class="fa-solid fa-book-open"></i> ${t('learn_new')}</button>
+                     <button onclick="startNewTest()" class="px-8 py-3 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 dark:shadow-none hover:scale-105 hover:bg-emerald-600 transition"><i class="fa-solid fa-play"></i> ${t('start_test')}</button>
                 </div>
             </div>
 
             <!-- Import Vocab UI -->
             <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-lg border border-slate-100 dark:border-slate-700 glassmorphism">
-                <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200 mb-2"><i class="fa-solid fa-database text-indigo-500"></i> Quản lý từ vựng</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Copy 2 cột (Tiếng Anh, Tiếng Việt) từ Excel/Sheets và dán vào ô bên dưới để thêm:</p>
+                <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200 mb-2"><i class="fa-solid fa-database text-indigo-500"></i> ${t('manage_vocab')}</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">${t('import_desc')}</p>
+                
+                <div class="flex gap-4 mb-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-slate-400 mb-1 ml-1 uppercase tracking-wider">${t('lang_1')}</label>
+                        <input id="l1-name-input" type="text" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border-2 border-slate-100 dark:border-slate-600 rounded-xl focus:border-indigo-500 outline-none transition dark:text-white" placeholder="Ví dụ: English" value="${currentState.langConfig.l1}">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-slate-400 mb-1 ml-1 uppercase tracking-wider">${t('lang_2')}</label>
+                        <input id="l2-name-input" type="text" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border-2 border-slate-100 dark:border-slate-600 rounded-xl focus:border-indigo-500 outline-none transition dark:text-white" placeholder="Ví dụ: Vietnamese" value="${currentState.langConfig.l2}">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 mb-4 ml-1">
+                    <input type="checkbox" id="ignore-base-checkbox" onchange="window.toggleIgnoreBase(this.checked)" ${currentState.langConfig.ignoreBase ? 'checked' : ''} class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="ignore-base-checkbox" class="text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">${t('ignore_base_vocab')}</label>
+                </div>
+
                 <textarea id="vocab-import-input" class="w-full h-32 p-4 border-2 border-slate-100 dark:border-slate-600 bg-transparent dark:text-white rounded-2xl mb-4 focus:border-indigo-500 outline-none transition resize-y" placeholder="Ví dụ:&#10;apple&#9;quả táo&#10;banana&#9;quả chuối"></textarea>
                 <div class="flex justify-between items-center flex-wrap gap-4">
                     <div class="flex gap-2">
-                        <button onclick="window.resetDefaultVocab()" class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-red-100 dark:border-red-800/50" title="Khôi phục mặc định"><i class="fa-solid fa-rotate-left"></i> Khôi phục</button>
-                        <button onclick="window.exportVocabToExcel()" class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-emerald-100 dark:border-emerald-800/50" title="Xuất ra Excel"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+                        <button onclick="window.exportVocabToExcel()" class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-emerald-100 dark:border-emerald-800/50" title="${t('export_excel')}"><i class="fa-solid fa-file-excel"></i> ${t('export_excel')}</button>
+                        <button onclick="window.factoryReset()" class="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-slate-200 dark:border-slate-600" title="${t('factory_reset')}"><i class="fa-solid fa-trash-can"></i> ${t('factory_reset')}</button>
                     </div>
-                    <button onclick="window.importVocab()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:scale-105 transition shadow-md ml-auto"><i class="fa-solid fa-plus"></i> Thêm (Insert)</button>
+                    <button onclick="window.importVocab()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:scale-105 transition shadow-md ml-auto"><i class="fa-solid fa-plus"></i> ${t('add_insert')}</button>
                 </div>
                 <span id="import-msg" class="text-sm font-bold text-red-500 block mt-2"></span>
             </div>
@@ -402,22 +674,22 @@ function renderHome(container) {
             ${currentState.incorrectWords.length > 0 ? `
                 <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40 border border-amber-200 dark:border-amber-700/50 p-6 rounded-[2rem] flex flex-col md:flex-row gap-4 items-center justify-between glassmorphism">
                     <div>
-                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg"><i class="fa-solid fa-triangle-exclamation"></i> Bạn có ${currentState.incorrectWords.length} từ cần ôn lại!</h4>
-                        <p class="text-amber-700 dark:text-amber-500 text-sm">Đây là những từ bạn đã trả lời sai ở bài test trước.</p>
+                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg"><i class="fa-solid fa-triangle-exclamation"></i> ${t('review_count', {n: currentState.incorrectWords.length})}</h4>
+                        <p class="text-amber-700 dark:text-amber-500 text-sm">${t('review_desc')}</p>
                     </div>
                     <div class="flex gap-3 w-full md:w-auto">
-                        <button onclick="window.clearReviewHistory()" class="flex-1 md:flex-none bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl font-bold shadow hover:scale-105 transition"><i class="fa-solid fa-check"></i> Đã nhớ</button>
-                        <button onclick="startNewTest(true)" class="flex-1 md:flex-none bg-amber-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:scale-105 transition"><i class="fa-solid fa-bolt"></i> Ôn ngay</button>
+                        <button onclick="window.clearReviewHistory()" class="flex-1 md:flex-none bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl font-bold shadow hover:scale-105 transition"><i class="fa-solid fa-check"></i> ${t('memorized')}</button>
+                        <button onclick="startNewTest(true)" class="flex-1 md:flex-none bg-amber-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:scale-105 transition"><i class="fa-solid fa-bolt"></i> ${t('review_now')}</button>
                     </div>
                 </div>
             ` : ''}
 
             <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-lg border border-slate-100 dark:border-slate-700 glassmorphism">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200"><i class="fa-solid fa-chart-line text-indigo-500"></i> Thống kê học tập</h3>
-                    <button onclick="window.clearRecentHistory()" class="text-xs font-bold text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i> Xóa lịch sử</button>
+                    <h3 class="font-bold text-lg text-slate-700 dark:text-slate-200"><i class="fa-solid fa-chart-line text-indigo-500"></i> ${t('learning_stats')}</h3>
+                    <button onclick="window.clearRecentHistory()" class="text-xs font-bold text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i> ${t('clear_history')}</button>
                 </div>
-                ${currentState.history.length === 0 ? '<p class="text-slate-400 italic text-center py-8">Chưa có dữ liệu bài test nào.</p>' : `
+                ${currentState.history.length === 0 ? `<p class="text-slate-400 italic text-center py-8">${t('no_history')}</p>` : `
                     <div class="h-64 w-full">
                         <canvas id="historyChart"></canvas>
                     </div>
@@ -428,21 +700,31 @@ function renderHome(container) {
     
     // Trigger mascot warn if there are words to review
     if (currentState.incorrectWords.length > 0) {
-        setTimeout(() => triggerMascot('warn', 'Ôn bài đi bạn ơi!'), 500);
+        setTimeout(() => triggerMascot('warn', t('mascot_warn')), 500);
     }
 }
 
 function renderLearnMode(container) {
+    if (!currentState.vocab || currentState.vocab.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-20 bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 glassmorphism">
+                <i class="fa-solid fa-folder-open text-6xl text-slate-200 mb-4 block"></i>
+                <p class="text-slate-500 dark:text-slate-400 font-medium">${t('no_vocab_warning')}</p>
+                <button onclick="switchMode('home')" class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:scale-105 transition">${t('go_home')}</button>
+            </div>
+        `;
+        return;
+    }
     const word = currentState.vocab[currentState.currentIndex];
     container.innerHTML = `
         <div class="flex flex-col items-center">
             <div class="w-full flex justify-between items-center mb-8">
                 <button onclick="switchMode('home')" class="text-slate-400 hover:text-indigo-600 font-bold transition flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    Trang chủ
+                    ${t('home')}
                 </button>
                 <div class="text-slate-500 font-medium bg-white px-4 py-1 rounded-full border border-slate-200 shadow-sm">
-                    Từ ${currentState.currentIndex + 1} / ${currentState.vocab.length}
+                    ${t('word_progress', {n: currentState.currentIndex + 1, m: currentState.vocab.length})}
                 </div>
                 <div class="w-20"></div> <!-- Spacer for symmetry -->
             </div>
@@ -450,12 +732,12 @@ function renderLearnMode(container) {
             <div id="flashcard" onclick="flipCard()" class="perspective-1000 w-full max-w-lg md:max-w-2xl h-80 md:h-96 cursor-pointer relative z-10 group">
                 <div class="relative w-full h-full duration-500 preserve-3d transition-transform ${currentState.isFlipped ? 'rotate-y-180' : ''}">
                     <div class="absolute inset-0 backface-hidden bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl border-2 border-indigo-50 dark:border-slate-700 flex flex-col items-center justify-center p-10 text-center glassmorphism group-hover:-translate-y-2 transition-transform">
-                        <h3 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-slate-100 leading-tight">${word.en}</h3>
-                        <div class="absolute bottom-6 text-xs text-slate-400 uppercase tracking-widest font-bold"><i class="fa-solid fa-hand-pointer"></i> Lật thẻ</div>
+                        <h3 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-slate-100 leading-tight">${word.t1}</h3>
+                        <div class="absolute bottom-6 text-xs text-slate-400 uppercase tracking-widest font-bold"><i class="fa-solid fa-hand-pointer"></i> ${t('flip_to', {lang: currentState.langConfig.l2})}</div>
                     </div>
                     <div class="absolute inset-0 backface-hidden bg-gradient-to-br from-indigo-600 to-purple-600 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center p-10 text-center rotate-y-180">
-                        <h3 class="text-3xl md:text-5xl font-bold text-white leading-relaxed">${word.vi}</h3>
-                        <div class="absolute bottom-6 text-xs text-indigo-200 uppercase tracking-widest font-bold">${word.en}</div>
+                        <h3 class="text-3xl md:text-5xl font-bold text-white leading-relaxed">${word.t2}</h3>
+                        <div class="absolute bottom-6 text-xs text-indigo-200 uppercase tracking-widest font-bold">${word.t1}</div>
                     </div>
                 </div>
             </div>
@@ -482,7 +764,7 @@ function renderTestMode(container) {
             
             <div class="flex justify-between items-center mb-8 relative z-10">
                 <button onclick="switchMode('home')" class="text-slate-400 hover:text-indigo-600 font-bold transition flex items-center gap-2">
-                    <i class="fa-solid fa-arrow-left"></i> Trang chủ
+                    <i class="fa-solid fa-arrow-left"></i> ${t('home')}
                 </button>
                 <span class="px-4 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm font-bold shadow-inner">
                     <i class="fa-solid fa-flag-checkered text-indigo-500"></i> ${currentState.currentIndex + 1} / ${currentState.testQuestions.length}
@@ -496,9 +778,9 @@ function renderTestMode(container) {
             </div>
 
             <div class="mt-12 flex justify-between items-center">
-                <button onclick="prevQuestion()" class="text-slate-400 font-bold hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-0 transition" ${currentState.currentIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> Quay lại</button>
+                <button onclick="prevQuestion()" class="text-slate-400 font-bold hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-0 transition" ${currentState.currentIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> ${t('back')}</button>
                 <button onclick="nextQuestion()" class="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-8 py-3 rounded-2xl font-bold hover:scale-105 shadow-lg shadow-indigo-200 dark:shadow-none transition">
-                    ${currentState.currentIndex === currentState.testQuestions.length - 1 ? '<i class="fa-solid fa-paper-plane"></i> Nộp bài' : 'Tiếp theo <i class="fa-solid fa-chevron-right"></i>'}
+                    ${currentState.currentIndex === currentState.testQuestions.length - 1 ? `<i class="fa-solid fa-paper-plane"></i> ${t('submit')}` : `${t('next')} <i class="fa-solid fa-chevron-right"></i>`}
                 </button>
             </div>
         </div>
@@ -508,7 +790,7 @@ function renderTestMode(container) {
 function renderQuestionType(q) {
     if (q.type === 'written') {
         return `
-            <input type="text" id="written-answer" placeholder="Nhập đáp án..." 
+            <input type="text" id="written-answer" placeholder="${t('enter_answer')}" 
                 class="w-full p-4 text-center text-xl font-semibold border-2 border-slate-200 dark:border-slate-600 bg-transparent dark:text-white rounded-2xl focus:border-indigo-500 outline-none transition"
                 value="${currentState.userAnswers[currentState.currentIndex] || ''}"
                 oninput="saveAnswer(this.value)"
@@ -565,7 +847,7 @@ function renderQuestionType(q) {
             </div>
             ${ms.matchedIds.length === 5 ? `
                 <div class="mt-6 text-center animate-bounce">
-                    <span class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-bold text-sm">✨ Đã ghép xong! Bấm "Tiếp theo"</span>
+                    <span class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-bold text-sm">${t('matching_done')}</span>
                 </div>
             ` : ''}
         `;
@@ -597,11 +879,11 @@ function handleMatchingClick(side, val, id) {
             // Nếu đã ghép xong tất cả 5 cặp
             if (ms.matchedIds.length === 5) {
                 saveAnswer(true); // Đánh dấu là đúng
-                triggerMascot('cheer', 'Giỏi quá!');
+                triggerMascot('cheer', t('mascot_cheer'));
             }
         } else {
             // Sai!
-            triggerMascot('error', 'Sai rồi!');
+            triggerMascot('error', t('mascot_error'));
             const firstId = ms.selected.id;
             const secondId = id;
             ms.errorId = firstId; // Hiệu ứng rung cho cả 2? Ở đây demo rung cái đầu
@@ -707,10 +989,10 @@ function renderResultMode(container) {
                 origin: { y: 0.6 },
                 colors: ['#6366f1', '#a855f7', '#ec4899', '#10b981']
             });
-            triggerMascot('cheer', 'Tuyệt vời!');
+            triggerMascot('cheer', t('result_great'));
         }, 300);
     } else if (currentState.finalScore < 50) {
-        setTimeout(() => triggerMascot('warn', 'Cần cố gắng hơn!'), 300);
+        setTimeout(() => triggerMascot('warn', t('result_try_harder')), 300);
     }
 
     container.innerHTML = `
@@ -719,11 +1001,11 @@ function renderResultMode(container) {
                 <span class="text-7xl drop-shadow-lg">${currentState.finalScore >= 80 ? '🏆' : currentState.finalScore >= 50 ? '👏' : '📚'}</span>
             </div>
             <h2 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600 mb-2 drop-shadow-sm">${currentState.finalScore}%</h2>
-            <p class="text-slate-500 dark:text-slate-400 mb-10 text-lg">Bạn đã trả lời đúng <span class="font-bold text-slate-700 dark:text-slate-200">${Math.round(currentState.finalScore * currentState.testQuestions.length / 100)} / ${currentState.testQuestions.length}</span> câu.</p>
+            <p class="text-slate-500 dark:text-slate-400 mb-10 text-lg">${t('result_desc', {n: Math.round(currentState.finalScore * currentState.testQuestions.length / 100), m: currentState.testQuestions.length})}</p>
             
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onclick="switchMode('home')" class="py-4 px-8 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl font-bold hover:scale-105 transition"><i class="fa-solid fa-house"></i> Về trang chủ</button>
-                <button onclick="startNewTest()" class="py-4 px-8 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-bold hover:scale-105 shadow-lg shadow-indigo-200 dark:shadow-none transition"><i class="fa-solid fa-rotate-right"></i> Làm lại bài khác</button>
+                <button onclick="switchMode('home')" class="py-4 px-8 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl font-bold hover:scale-105 transition"><i class="fa-solid fa-house"></i> ${t('go_home')}</button>
+                <button onclick="startNewTest()" class="py-4 px-8 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-bold hover:scale-105 shadow-lg shadow-indigo-200 dark:shadow-none transition"><i class="fa-solid fa-rotate-right"></i> ${t('try_again')}</button>
             </div>
         </div>
     `;
@@ -774,14 +1056,73 @@ function clearRecentHistory() {
     }
 }
 
+function parseVocabData(rawData) {
+    const lines = rawData.split('\n');
+    const results = [];
+    const processedThisTime = new Set();
+
+    for (let line of lines) {
+        if (!line.trim()) continue;
+        const parts = line.split('\t');
+        if (parts.length >= 2) {
+            const t1Word = parts[0].trim();
+            const t2Word = parts[1].trim();
+            const t1Lower = t1Word.toLowerCase();
+
+            if (processedThisTime.has(t1Lower)) {
+                results.push({ t1: t1Word, t2: t2Word, status: 'skip' });
+                continue;
+            }
+            processedThisTime.add(t1Lower);
+
+            const existingWord = currentState.vocab.find(w => w.t1.toLowerCase().trim() === t1Lower);
+
+            if (existingWord) {
+                const currentMeanings = existingWord.t2.split(',').map(m => normalize(m));
+                const inputMeanings = t2Word.split(',').map(m => m.trim());
+                const newMeanings = inputMeanings.filter(nm => !currentMeanings.includes(normalize(nm)));
+
+                if (newMeanings.length > 0) {
+                    results.push({ t1: t1Word, t2: t2Word, status: 'update' });
+                } else {
+                    results.push({ t1: t1Word, t2: t2Word, status: 'skip' });
+                }
+            } else {
+                results.push({ t1: t1Word, t2: t2Word, status: 'new' });
+            }
+        }
+    }
+    return results;
+}
+
 function importVocab() {
     const input = document.getElementById('vocab-import-input');
+    const l1Input = document.getElementById('l1-name-input');
+    const l2Input = document.getElementById('l2-name-input');
     const msg = document.getElementById('import-msg');
+    
     if (!input || !input.value.trim()) return;
 
+    // Capture pending language names
+    currentState.langConfig.pendingL1 = l1Input.value.trim() || "L1";
+    currentState.langConfig.pendingL2 = l2Input.value.trim() || "L2";
+
     const rawData = input.value;
-    const lines = rawData.split('\n');
-    
+    const parsed = parseVocabData(rawData);
+
+    if (parsed.length === 0) {
+        if (msg) {
+            msg.textContent = "Không tìm thấy dữ liệu hợp lệ (cần ít nhất 2 cột phân cách bằng Tab).";
+            setTimeout(() => msg.textContent = "", 3000);
+        }
+        return;
+    }
+
+    currentState.pendingVocab = parsed;
+    switchMode('import_review');
+}
+
+function confirmImport() {
     let existingCustom = [];
     try {
         const saved = localStorage.getItem('custom_vocab');
@@ -790,90 +1131,130 @@ function importVocab() {
 
     let addedCount = 0;
     let updatedCount = 0;
-    let skippedCount = 0;
-    
-    // Tạo tập hợp các từ đã xử lý trong cùng 1 lần paste để tránh trùng lặp nội bộ
-    const processedThisTime = new Set();
-    
-    for (let line of lines) {
-        if (!line.trim()) continue;
-        const parts = line.split('\t');
-        if (parts.length >= 2) {
-            const enWord = parts[0].trim();
-            const viWord = parts[1].trim();
-            const enLower = enWord.toLowerCase();
+
+    currentState.pendingVocab.forEach(item => {
+        if (item.status === 'skip') return;
+
+        const t1Lower = item.t1.toLowerCase().trim();
+        const existingWord = currentState.vocab.find(w => w.t1.toLowerCase().trim() === t1Lower);
+
+        if (item.status === 'update' && existingWord) {
+            const currentMeanings = existingWord.t2.split(',').map(m => normalize(m));
+            const inputMeanings = item.t2.split(',').map(m => m.trim());
+            const newMeanings = inputMeanings.filter(nm => !currentMeanings.includes(normalize(nm)));
             
-            // Bỏ qua nếu từ tiếng Anh trùng lặp trong cùng khối dữ liệu paste
-            if (processedThisTime.has(enLower)) {
-                skippedCount++;
-                continue;
-            }
-            processedThisTime.add(enLower);
+            const finalT2 = existingWord.t2 + ', ' + newMeanings.join(', ');
             
-            // Tìm xem từ đã có trong currentState chưa
-            const existingWord = currentState.vocab.find(w => w.en.toLowerCase().trim() === enLower);
-            
-            if (existingWord) {
-                // Kiểm tra xem nghĩa mới đã có trong nghĩa cũ chưa
-                const currentMeanings = existingWord.vi.split(',').map(m => normalize(m));
-                const inputMeanings = viWord.split(',').map(m => m.trim());
-                
-                // Lọc những nghĩa thực sự mới
-                const newMeanings = inputMeanings.filter(nm => !currentMeanings.includes(normalize(nm)));
-                
-                if (newMeanings.length > 0) {
-                    // Cập nhật nghĩa
-                    const finalVi = existingWord.vi + ', ' + newMeanings.join(', ');
-                    
-                    // Cập nhật vào existingCustom
-                    const customIndex = existingCustom.findIndex(w => w.en.toLowerCase().trim() === enLower);
-                    if (customIndex !== -1) {
-                        existingCustom[customIndex].vi = finalVi;
-                    } else {
-                        // Từ gốc ở VOCAB_DATA, lưu vào custom_vocab để override
-                        existingCustom.push({ en: existingWord.en, vi: finalVi });
-                    }
-                    
-                    // Tạm cập nhật vào currentState để xử lý liền mạch
-                    existingWord.vi = finalVi;
-                    updatedCount++;
-                } else {
-                    skippedCount++;
-                }
+            const customIndex = existingCustom.findIndex(w => w.t1.toLowerCase().trim() === t1Lower);
+            if (customIndex !== -1) {
+                existingCustom[customIndex].t2 = finalT2;
             } else {
-                // Chưa tồn tại -> Thêm mới
-                existingCustom.push({ en: enWord, vi: viWord });
-                // Cập nhật tạm để chống trùng lặp
-                currentState.vocab.push({ en: enWord, vi: viWord, id: -1 });
-                addedCount++;
+                existingCustom.push({ t1: existingWord.t1, t2: finalT2 });
             }
+            updatedCount++;
+        } else if (item.status === 'new') {
+            existingCustom.push({ t1: item.t1, t2: item.t2 });
+            addedCount++;
         }
-    }
+    });
 
     if (addedCount > 0 || updatedCount > 0) {
         localStorage.setItem('custom_vocab', JSON.stringify(existingCustom));
-        input.value = '';
+        // Update language names
+        currentState.langConfig.l1 = currentState.langConfig.pendingL1;
+        currentState.langConfig.l2 = currentState.langConfig.pendingL2;
+        localStorage.setItem('vocab_lang_config', JSON.stringify(currentState.langConfig));
+        
         init();
-        render();
-        alert(`Kết quả import:\n- Thêm mới: ${addedCount} từ\n- Cập nhật nghĩa: ${updatedCount} từ\n- Đã có sẵn (bỏ qua): ${skippedCount} từ`);
+        const input = document.getElementById('vocab-import-input');
+        if (input) input.value = '';
+        
+        switchMode('home');
+        const successMsg = currentState.langConfig.uiLang === 'vi' 
+            ? `Thành công! Đã thêm ${addedCount} và cập nhật ${updatedCount}.` 
+            : `Success! Added ${addedCount} and updated ${updatedCount}.`;
+        alert(successMsg);
     } else {
-        if (skippedCount > 0) {
-            input.value = '';
-            alert(`Kết quả import:\n- Bỏ qua: ${skippedCount} từ (đã có sẵn và không có nghĩa mới).`);
-        } else if (msg) {
-            msg.textContent = "Không tìm thấy dữ liệu hợp lệ (cần 2 cột phân cách bằng Tab).";
-            setTimeout(() => msg.textContent = "", 3000);
-        }
+        switchMode('home');
     }
 }
 
-function resetDefaultVocab() {
-    if (confirm("Bạn có chắc chắn muốn xóa toàn bộ từ vựng đã thêm/chỉnh sửa và khôi phục về mặc định? Hành động này không thể hoàn tác!")) {
-        localStorage.removeItem('custom_vocab');
-        init();
-        render();
-        alert("Đã khôi phục từ vựng về trạng thái mặc định!");
-    }
+function renderImportReview(container) {
+    const n = currentState.pendingVocab.length;
+    container.innerHTML = `
+        <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 glassmorphism flex flex-col h-[80vh] animate-slide-up">
+            <div class="mb-6">
+                <h2 class="text-2xl font-black text-slate-700 dark:text-slate-100">${t('import_review_title')}</h2>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">${t('import_review_desc', {n})}</p>
+            </div>
+
+            <div id="review-table-container" class="flex-1 overflow-y-auto border border-slate-100 dark:border-slate-700 rounded-2xl mb-6 relative bg-slate-50/30 dark:bg-slate-900/30">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-slate-50 dark:bg-slate-900 z-20">
+                        <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">
+                            <th class="px-4 py-3">${t('col_word')}</th>
+                            <th class="px-4 py-3">${t('col_meaning')}</th>
+                            <th class="px-4 py-3 w-24 text-center">${t('col_status')}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="review-table-body">
+                        <!-- Rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex gap-4 justify-end">
+                <button onclick="switchMode('home')" class="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition">${t('cancel')}</button>
+                <button onclick="window.confirmImport()" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 dark:shadow-none hover:scale-105 transition active:scale-95">${t('confirm')}</button>
+            </div>
+        </div>
+    `;
+
+    // Reset display count
+    currentState.reviewDisplayCount = 50;
+    renderReviewTableOnly();
+
+    // Infinite Scroll
+    const tableContainer = document.getElementById('review-table-container');
+    tableContainer.onscroll = () => {
+        if (tableContainer.scrollTop + tableContainer.clientHeight >= tableContainer.scrollHeight - 20) {
+            if (currentState.reviewDisplayCount < currentState.pendingVocab.length) {
+                currentState.reviewDisplayCount += 50;
+                renderReviewTableOnly();
+            }
+        }
+    };
+}
+
+function renderReviewTableOnly() {
+    const tbody = document.getElementById('review-table-body');
+    if (!tbody) return;
+
+    const data = currentState.pendingVocab.slice(0, currentState.reviewDisplayCount);
+    tbody.innerHTML = data.map(item => {
+        let statusClass = '';
+        let statusLabel = '';
+        if (item.status === 'new') {
+            statusClass = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
+            statusLabel = t('status_new');
+        } else if (item.status === 'update') {
+            statusClass = 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
+            statusLabel = t('status_update');
+        } else {
+            statusClass = 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
+            statusLabel = t('status_skip');
+        }
+
+        return `
+            <tr class="border-b border-slate-50 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800/50 transition">
+                <td class="px-4 py-3 font-bold text-slate-700 dark:text-slate-200 text-sm">${item.t1}</td>
+                <td class="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">${item.t2}</td>
+                <td class="px-4 py-3 text-center">
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${statusClass}">${statusLabel}</span>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function exportVocabToExcel() {
@@ -882,9 +1263,10 @@ function exportVocabToExcel() {
         return;
     }
     
+    const config = currentState.langConfig;
     // Create TSV content
-    const header = "Tiếng Anh\tTiếng Việt\n";
-    const rows = currentState.vocab.map(w => `${w.en}\t${w.vi}`).join('\n');
+    const header = `${config.l1}\t${config.l2}\n`;
+    const rows = currentState.vocab.map(w => `${w.t1}\t${w.t2}`).join('\n');
     const tsvContent = header + rows;
     
     // Create a Blob and trigger download
@@ -892,7 +1274,7 @@ function exportVocabToExcel() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "tu_vung_hien_tai.tsv");
+    link.setAttribute("download", `tu_vung_${config.l1}_${config.l2}.tsv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -902,7 +1284,7 @@ function exportVocabToExcel() {
 window.clearReviewHistory = clearReviewHistory;
 window.clearRecentHistory = clearRecentHistory;
 window.importVocab = importVocab;
-window.resetDefaultVocab = resetDefaultVocab;
+window.confirmImport = confirmImport;
 window.exportVocabToExcel = exportVocabToExcel;
 
 window.onload = () => { 
