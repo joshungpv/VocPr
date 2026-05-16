@@ -1,5 +1,7 @@
 # 🎓 VocPr (Vocabulary Practice)
 
+![VocPr Banner](assets/banner.png)
+
 [Tiếng Việt](#tiếng-việt) | [English](#english)
 
 ---
@@ -20,7 +22,11 @@
 - 📥 **Quản lý từ vựng (Nhập/Xuất hàng loạt):**
   - Dễ dàng thêm hoặc cập nhật từ vựng bằng cách sao chép 2 cột dữ liệu từ Excel/Google Sheets và dán vào phần nhập liệu.
   - Tự động nhận diện và bổ sung nghĩa mới nếu từ vựng đã tồn tại.
-  - Xuất toàn bộ danh sách từ vựng hiện tại ra định dạng Excel (.tsv).
+- Xuất toàn bộ danh sách từ vựng hiện tại ra định dạng Excel (.tsv).
+
+### 🖼️ Giao diện ứng dụng
+
+![VocPr Screenshot](assets/screenshot.png)
 
 ### 📖 Hướng dẫn sử dụng
 
@@ -76,6 +82,7 @@ Dự án được phát hành dưới giấy phép [MIT License](LICENSE).
 
 - `assets/buffalo_mascot.png` — Được tạo bởi Google Gemini (2026)
 - `assets/bamboo_leaf.png` — Được tạo bởi Google Gemini (2026)
+- `assets/banner.png` — Banner nghệ thuật được tạo bởi Google Gemini (2026)
 
 > **Lưu ý:** Theo quy định của Văn phòng Bản quyền Hoa Kỳ (2023), các hình ảnh thuần túy do AI tạo ra có thể không thuộc đối tượng được bảo hộ bản quyền. Các tài sản này được cung cấp "nguyên trạng" cùng với mã nguồn giấy phép MIT. Người dùng có quyền tự do sử dụng, sửa đổi và phân phối lại.
 
@@ -104,6 +111,10 @@ A universal, offline web application for learning vocabulary in any language pai
   - Easily add or update vocabulary in bulk by copying any 2 columns of data from Excel/Google Sheets and pasting them into the import section.
   - Automatically recognizes and adds new meanings if the word already exists.
   - Export the entire current vocabulary list to Excel (.tsv) format.
+
+### 🖼️ Application Interface
+
+![VocPr Screenshot](assets/screenshot.png)
 
 ### 📖 User Guide
 
@@ -161,6 +172,7 @@ This project is released under the [MIT License](LICENSE).
 
 - `assets/buffalo_mascot.png` — Generated using Google Gemini (2026)
 - `assets/bamboo_leaf.png` — Generated using Google Gemini (2026)
+- `assets/banner.png` — Artistic banner generated using Google Gemini (2026)
 
 > **Note:** Per the US Copyright Office (2023), purely AI-generated images may not be eligible for copyright protection. These assets are provided "as-is" alongside the MIT-licensed source code. Users are free to use, modify, and redistribute them.
 
