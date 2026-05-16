@@ -10,19 +10,21 @@
 
 Ứng dụng web học từ vựng đa ngôn ngữ ngoại tuyến. Hỗ trợ bất kỳ cặp ngôn ngữ nào (ví dụ: Anh-Việt, Trung-Nhật, v.v.) và chạy hoàn toàn trên trình duyệt, không yêu cầu thiết lập máy chủ.
 
-### ✨ Các tính năng chính
+### ✨ Các tính năng nổi bật
 
-- 📖 **Chế độ Học (Flashcards):** Xem từ vựng và nghĩa giữa hai ngôn ngữ bất kỳ với hiệu ứng lật thẻ tương tác.
-- 📝 **Chế độ Kiểm tra (Test):** Đa dạng các loại bài tập giúp củng cố trí nhớ:
-  - Nhập liệu (Typing)
-  - Trắc nghiệm (Multiple Choice)
-  - Ghép cặp (Matching)
-- ⚙️ **Cấu hình bài thi:** Tùy chỉnh số lượng câu hỏi mỗi bài kiểm tra (10, 20, 50, hoặc tất cả).
-- 📊 **Theo dõi lịch sử:** Tự động lưu kết quả bài thi và danh sách từ làm sai để ôn tập. Hỗ trợ tính năng xóa lịch sử học tập.
-- 📥 **Quản lý từ vựng (Nhập/Xuất hàng loạt):**
-  - Dễ dàng thêm hoặc cập nhật từ vựng bằng cách sao chép 2 cột dữ liệu từ Excel/Google Sheets và dán vào phần nhập liệu.
-  - Tự động nhận diện và bổ sung nghĩa mới nếu từ vựng đã tồn tại.
-- Xuất toàn bộ danh sách từ vựng hiện tại ra định dạng Excel (.tsv).
+- 🌏 **Hỗ trợ đa ngôn ngữ (i18n):** Giao diện linh hoạt giữa Tiếng Việt và Tiếng Anh.
+- 🧩 **Tùy biến cặp ngôn ngữ:** Tự định nghĩa tên ngôn ngữ (L1/L2) cho bộ từ vựng của riêng bạn.
+- 📖 **Chế độ Học (Flashcards):** Trải nghiệm lật thẻ mượt mà với hiệu ứng glassmorphism hiện đại.
+- 📝 **Chế độ Kiểm tra (Test) thông minh:** 
+  - Đa dạng loại câu hỏi: Nhập liệu, Trắc nghiệm, Ghép cặp.
+  - Tự động xáo trộn và tạo câu hỏi từ cả hai chiều (L1 ↔ L2).
+- 📥 **Quản lý dữ liệu mạnh mẽ:**
+  - **Nhập liệu linh hoạt:** Hỗ trợ copy-paste từ Excel với nhiều dấu phân cách (`Tab`, `:`, `-`, `|`).
+  - **Tải file trực tiếp:** Hỗ trợ upload file `.xlsx`, `.xls`, `.csv`.
+  - **Drag & Drop:** Kéo thả file trực tiếp vào vùng nhập liệu để xử lý tức thì.
+  - **Bảng kiểm soát (Review):** Xem và xác nhận dữ liệu (từ mới, cập nhật nghĩa) trước khi lưu vào máy.
+- 📊 **Theo dõi tiến độ:** Biểu đồ thống kê kết quả, streak học tập hàng ngày và tính năng ôn tập từ vựng làm sai.
+- 🌗 **Chế độ tối (Dark Mode):** Giao diện dịu mắt cho việc học vào ban đêm.
 
 ### 🖼️ Giao diện ứng dụng
 
@@ -100,17 +102,19 @@ A universal, offline web application for learning vocabulary in any language pai
 
 ### ✨ Key Features
 
-- 📖 **Learning Mode (Flashcards):** View vocabulary and meanings between any two languages with click/flip card interactions.
-- 📝 **Test Mode:** Various exercise types to reinforce memory:
-  - Typing (Written)
-  - Multiple Choice
-  - Matching
-- ⚙️ **Test Configuration:** Users can customize the number of questions per test (10, 20, 50, or all).
-- 📊 **History Tracking:** Automatically saves test results and incorrect words for review. Supports clearing study history.
-- 📥 **Vocabulary Management (Bulk Import / Export):**
-  - Easily add or update vocabulary in bulk by copying any 2 columns of data from Excel/Google Sheets and pasting them into the import section.
-  - Automatically recognizes and adds new meanings if the word already exists.
-  - Export the entire current vocabulary list to Excel (.tsv) format.
+- 🌏 **Internationalization (i18n):** Seamlessly switch the UI between English and Vietnamese.
+- 🧩 **Custom Language Pairs:** Define your own language names (L1/L2) for personalized study sets.
+- 📖 **Learning Mode (Flashcards):** Smooth card-flipping experience with a premium glassmorphism design.
+- 📝 **Smart Test Mode:** 
+  - Multiple question types: Written (Typing), Multiple Choice, and Matching.
+  - Automatic shuffling and bi-directional testing (L1 ↔ L2).
+- 📥 **Advanced Data Management:**
+  - **Flexible Import:** Copy-paste from Excel with support for various delimiters (`Tab`, `:`, `-`, `|`).
+  - **Direct File Upload:** Supports `.xlsx`, `.xls`, and `.csv` files.
+  - **Drag & Drop:** Drop your files directly onto the import area for instant processing.
+  - **Data Review Table:** Verify changes (new words, updated meanings) before committing to storage.
+- 📊 **Progress Tracking:** Interactive statistics charts, daily streaks, and focused review for incorrect words.
+- 🌗 **Dark Mode:** Easy on the eyes for late-night study sessions.
 
 ### 🖼️ Application Interface
 

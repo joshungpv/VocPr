@@ -98,7 +98,9 @@ const I18N_STRINGS = {
         reset_confirm: "WARNING: This will delete ALL custom vocabulary, history, and settings. The app will return to its initial default state (with sample vocabulary). Proceed?",
         ignore_base_vocab: "Ignore default vocabulary",
         no_vocab_warning: "No vocabulary found. Please add new words or check your settings.",
-        no_vocab_test_warning: "No valid vocabulary to start the test."
+        no_vocab_test_warning: "No valid vocabulary to start the test.",
+        import_placeholder: "Example:\napple: quả táo\nbanana - quả chuối\ncherry | quả anh đào",
+        import_help: "Supported formats: Tab, Colon (:), Dash (-), Pipe (|)"
     },
     vi: {
         ready: "Sẵn sàng chưa?",
@@ -155,7 +157,9 @@ const I18N_STRINGS = {
         reset_confirm: "CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ từ vựng bạn đã thêm, lịch sử và cài đặt. Ứng dụng sẽ quay về trạng thái mặc định ban đầu (có từ vựng mẫu). Bạn có chắc chắn không?",
         ignore_base_vocab: "Bỏ qua từ vựng mặc định",
         no_vocab_warning: "Không có từ vựng nào để học. Vui lòng thêm từ mới hoặc kiểm tra cài đặt.",
-        no_vocab_test_warning: "Không có từ vựng nào hợp lệ để bắt đầu bài kiểm tra."
+        no_vocab_test_warning: "Không có từ vựng nào hợp lệ để bắt đầu bài kiểm tra.",
+        import_placeholder: "Ví dụ:\napple: quả táo\nbanana - quả chuối\ncherry | quả anh đào",
+        import_help: "Định dạng hỗ trợ: Tab, Dấu hai chấm (:), Gạch ngang (-), Dấu gạch đứng (|)"
     }
 };
 
@@ -563,8 +567,9 @@ function render() {
     // After render hooks
     if (currentState.mode === 'test') {
         focusInput();
-    } else if (currentState.mode === 'home' && currentState.history.length > 0) {
-        setTimeout(renderChart, 50);
+    } else if (currentState.mode === 'home') {
+        if (currentState.history.length > 0) setTimeout(renderChart, 50);
+        setupDragAndDrop();
     }
 }
 
@@ -660,9 +665,12 @@ function renderHome(container) {
                     <label for="ignore-base-checkbox" class="text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">${t('ignore_base_vocab')}</label>
                 </div>
 
-                <textarea id="vocab-import-input" class="w-full h-32 p-4 border-2 border-slate-100 dark:border-slate-600 bg-transparent dark:text-white rounded-2xl mb-4 focus:border-indigo-500 outline-none transition resize-y" placeholder="Ví dụ:&#10;apple&#9;quả táo&#10;banana&#9;quả chuối"></textarea>
+                <textarea id="vocab-import-input" class="w-full h-32 p-4 border-2 border-slate-100 dark:border-slate-600 bg-transparent dark:text-white rounded-2xl mb-1 focus:border-indigo-500 outline-none transition resize-y" placeholder="${t('import_placeholder')}"></textarea>
+                <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-4 ml-1 uppercase tracking-tighter">${t('import_help')}</p>
                 <div class="flex justify-between items-center flex-wrap gap-4">
                     <div class="flex gap-2">
+                        <input type="file" id="excel-upload" accept=".xlsx, .xls, .csv" class="hidden" onchange="window.handleFileUpload(event)">
+                        <button onclick="document.getElementById('excel-upload').click()" class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-amber-100 dark:border-amber-800/50" title="Upload Excel/CSV"><i class="fa-solid fa-file-import"></i> Upload Excel</button>
                         <button onclick="window.exportVocabToExcel()" class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-emerald-100 dark:border-emerald-800/50" title="${t('export_excel')}"><i class="fa-solid fa-file-excel"></i> ${t('export_excel')}</button>
                         <button onclick="window.factoryReset()" class="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-slate-200 dark:border-slate-600" title="${t('factory_reset')}"><i class="fa-solid fa-trash-can"></i> ${t('factory_reset')}</button>
                     </div>
@@ -1061,12 +1069,40 @@ function parseVocabData(rawData) {
     const results = [];
     const processedThisTime = new Set();
 
+    // Delimiter priority: Tab > Colon > Dash (with spaces) > Pipe
+    // Regex explanation:
+    // \t : Tab
+    // \s*[:|]\s* : Colon or Pipe with optional surrounding spaces
+    // \s+-\s+ : Dash with at least one space on both sides
+    const delimiterRegex = /\t|\s*[:|]\s*|\s+-\s+/;
+
     for (let line of lines) {
-        if (!line.trim()) continue;
-        const parts = line.split('\t');
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+
+        // Try to find the best delimiter
+        let parts = [];
+        if (line.includes('\t')) {
+            parts = line.split('\t');
+        } else {
+            // Split by the first occurrence of any supported delimiter
+            const match = line.match(delimiterRegex);
+            if (match) {
+                const sep = match[0];
+                const firstIdx = line.indexOf(sep);
+                parts = [
+                    line.substring(0, firstIdx),
+                    line.substring(firstIdx + sep.length)
+                ];
+            }
+        }
+
         if (parts.length >= 2) {
             const t1Word = parts[0].trim();
             const t2Word = parts[1].trim();
+            
+            if (!t1Word || !t2Word) continue;
+
             const t1Lower = t1Word.toLowerCase();
 
             if (processedThisTime.has(t1Lower)) {
@@ -1280,12 +1316,101 @@ function exportVocabToExcel() {
     document.body.removeChild(link);
 }
 
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // Convert to array of arrays (header: 1)
+            const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            
+            let tsvContent = "";
+            rows.forEach(row => {
+                if (row && row.length >= 2) {
+                    const t1 = row[0] ? String(row[0]).trim() : "";
+                    const t2 = row[1] ? String(row[1]).trim() : "";
+                    if (t1 && t2) {
+                        tsvContent += `${t1}\t${t2}\n`;
+                    }
+                }
+            });
+
+            if (tsvContent) {
+                const input = document.getElementById('vocab-import-input');
+                if (input) {
+                    input.value = tsvContent;
+                    // Auto-trigger import review
+                    importVocab();
+                }
+            } else {
+                alert("Không tìm thấy dữ liệu hợp lệ trong file (cần ít nhất 2 cột).");
+            }
+        } catch (err) {
+            console.error("Excel processing failed", err);
+            alert("Lỗi khi xử lý file. Vui lòng kiểm tra định dạng.");
+        }
+    };
+    reader.readAsArrayBuffer(file);
+    // Reset input so the same file can be uploaded again if needed
+    event.target.value = '';
+}
+
+function setupDragAndDrop() {
+    const textarea = document.getElementById('vocab-import-input');
+    if (!textarea) return;
+
+    const preventDefault = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    textarea.addEventListener('dragover', (e) => {
+        preventDefault(e);
+        textarea.classList.add('border-indigo-500', 'bg-indigo-50/50', 'dark:bg-indigo-900/20');
+    });
+
+    textarea.addEventListener('dragleave', (e) => {
+        preventDefault(e);
+        textarea.classList.remove('border-indigo-500', 'bg-indigo-50/50', 'dark:bg-indigo-900/20');
+    });
+
+    textarea.addEventListener('drop', (e) => {
+        preventDefault(e);
+        textarea.classList.remove('border-indigo-500', 'bg-indigo-50/50', 'dark:bg-indigo-900/20');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (['xlsx', 'xls', 'csv'].includes(ext)) {
+                const event = { target: { files: [file] } };
+                handleFileUpload(event);
+            } else {
+                const reader = new FileReader();
+                reader.onload = (rev) => {
+                    textarea.value = rev.target.result;
+                    importVocab();
+                };
+                reader.readAsText(file);
+            }
+        }
+    });
+}
+
 // Ensure global access
 window.clearReviewHistory = clearReviewHistory;
 window.clearRecentHistory = clearRecentHistory;
 window.importVocab = importVocab;
 window.confirmImport = confirmImport;
 window.exportVocabToExcel = exportVocabToExcel;
+window.handleFileUpload = handleFileUpload;
 
 window.onload = () => { 
     init(); 
