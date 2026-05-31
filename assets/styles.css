@@ -224,3 +224,22 @@ button:active {
 #mascot-img:active {
     transform: scale(0.9);
 }
+
+/* Adaptive Viewport Mode Styles (SDD-SUB-20260516-11) */
+body.is-mobile-mode {
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    /* Chặn hiệu ứng cao su trên iOS */
+    -webkit-overflow-scrolling: auto;
+}
+
+body.is-mobile-mode #app {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 5rem; /* Thêm khoảng trống cuối để không bị che bởi UI hệ thống */
+}

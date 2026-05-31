@@ -24,6 +24,7 @@
   - **Drag & Drop:** Kéo thả file trực tiếp vào vùng nhập liệu để xử lý tức thì.
   - **Bảng kiểm soát (Review):** Xem và xác nhận dữ liệu (từ mới, cập nhật nghĩa) trước khi lưu vào máy.
 - 📊 **Theo dõi tiến độ:** Biểu đồ thống kê kết quả, streak học tập hàng ngày và tính năng ôn tập từ vựng làm sai.
+- 📱 **Hỗ trợ Mobile (Adaptive Mode):** Chế độ tối ưu riêng cho điện thoại, khóa tỷ lệ khung hình và ngăn cuộn đàn hồi (elastic scroll) để mang lại trải nghiệm giống như ứng dụng di động.
 - 🌗 **Chế độ tối (Dark Mode):** Giao diện dịu mắt cho việc học vào ban đêm.
 
 ### 🖼️ Giao diện ứng dụng
@@ -48,6 +49,12 @@
 2. **Xóa sạch dữ liệu (Reset)**: Bấm nút Reset để xóa dữ liệu cũ trong bộ nhớ trình duyệt.
 3. Thực hiện các bước nạp từ vựng như trên với bộ từ mới (Trung - Anh).
 *Lưu ý: Bạn cũng có thể tích chọn **"Bỏ qua từ vựng mặc định"** để chỉ tập trung vào các từ bạn đã nạp.*
+
+#### 3. Chế độ Mobile (Mobile Mode)
+Để tối ưu hóa trải nghiệm trên điện thoại:
+1. Mở menu **Cài đặt**.
+2. Bật tùy chọn **"Chế độ Mobile"**.
+3. Ứng dụng sẽ tự động điều chỉnh viewport, ngăn chặn việc thu phóng (zoom) không mong muốn và khóa hiệu ứng cuộn của hệ điều hành, giúp giao diện ổn định hơn khi thao tác nhanh.
 
 
 #### 4. Phím tắt hữu ích
@@ -114,6 +121,7 @@ A universal, offline web application for learning vocabulary in any language pai
   - **Drag & Drop:** Drop your files directly onto the import area for instant processing.
   - **Data Review Table:** Verify changes (new words, updated meanings) before committing to storage.
 - 📊 **Progress Tracking:** Interactive statistics charts, daily streaks, and focused review for incorrect words.
+- 📱 **Mobile Support (Adaptive Mode):** A specialized mode for mobile devices that locks the viewport and disables elastic scrolling for a native app-like experience.
 - 🌗 **Dark Mode:** Easy on the eyes for late-night study sessions.
 
 ### 🖼️ Application Interface
@@ -138,6 +146,12 @@ To switch to an entirely new set of languages:
 2. **Factory Reset**: Click the Reset button to clear old data from the browser storage.
 3. Follow the import steps above for the new pair (Chinese - English).
 *Tip: Check **"Ignore default vocabulary"** to focus only on your imported words.*
+
+#### 3. Mobile Mode
+To optimize your experience on mobile devices:
+1. Open the **Settings** menu.
+2. Toggle **"Mobile Mode"** on.
+3. The app will automatically adjust the viewport, prevent unwanted zooming, and lock OS-level elastic scrolling, ensuring a stable interface during fast interactions.
 
 
 #### 4. Useful Keyboard Shortcuts

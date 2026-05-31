@@ -39,7 +39,10 @@ let currentState = {
 
     // Import Review State
     pendingVocab: [], // [{ t1, t2, status: 'new' | 'update' | 'skip' }]
-    reviewDisplayCount: 50
+    reviewDisplayCount: 50,
+
+    // Adaptive Viewport Mode
+    viewportMode: 'web' // 'web' | 'mobile'
 };
 
 const I18N_STRINGS = {
@@ -197,6 +200,53 @@ function toggleUILang() {
 window.toggleUILang = toggleUILang;
 
 /**
+ * Toggle between Web Mode and Mobile Mode
+ */
+function toggleViewportMode() {
+    const next = currentState.viewportMode === 'web' ? 'mobile' : 'web';
+    currentState.viewportMode = next;
+    
+    // Persist
+    localStorage.setItem('vocab_viewport_mode', next);
+    
+    applyViewportMode(next);
+}
+window.toggleViewportMode = toggleViewportMode;
+
+/**
+ * Apply viewport mode to DOM and Meta
+ */
+function applyViewportMode(mode) {
+    const isMobile = mode === 'mobile';
+    
+    // Update Body Class
+    if (isMobile) {
+        document.body.classList.add('is-mobile-mode');
+    } else {
+        document.body.classList.remove('is-mobile-mode');
+    }
+    
+    // Update Meta Viewport
+    let viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+        if (isMobile) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+        } else {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        }
+    }
+    
+    // Update Button Icon
+    const btnViewport = document.getElementById('btn-viewport-mode');
+    if (btnViewport) {
+        const icon = btnViewport.querySelector('i');
+        if (icon) {
+            icon.className = isMobile ? 'fa-solid fa-mobile-screen-button text-indigo-600' : 'fa-solid fa-globe';
+        }
+    }
+}
+
+/**
  * Helper to migrate legacy en/vi objects to t1/t2
  */
 function migrateLegacyData(item) {
@@ -302,6 +352,13 @@ function init() {
         // Init UI Lang Button
         const btnLang = document.getElementById('btn-lang');
         if (btnLang) btnLang.textContent = (currentState.langConfig.uiLang || 'vi').toUpperCase();
+
+        // Init Viewport Mode
+        const savedViewport = localStorage.getItem('vocab_viewport_mode');
+        if (savedViewport) {
+            currentState.viewportMode = savedViewport;
+        }
+        applyViewportMode(currentState.viewportMode);
     } else {
         console.error("VOCAB_DATA not found!");
     }
