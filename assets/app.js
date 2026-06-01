@@ -35,6 +35,7 @@ let currentState = {
         uiLang: 'vi', // 'en' | 'vi'
         ignoreBase: false,
         skipKnown: true, // Default: skip known words when studying flashcards
+        autoPronounce: false, // Default: don't auto-pronounce to avoid unexpected sound
         pendingL1: '',
         pendingL2: ''
     },
@@ -85,7 +86,7 @@ const I18N_STRINGS = {
         result_great: "Excellent!",
         result_try_harder: "Need to try harder!",
         result_desc: "You answered correctly {n} / {m} questions.",
-        
+
         // Import Review
         import_review_title: "Review Changes",
         import_review_desc: "Please review the data before final import. {n} words total.",
@@ -114,7 +115,8 @@ const I18N_STRINGS = {
         reset_known_confirm: "Are you sure you want to relearn all words marked as 'Memorized'?",
         mark_known: "I know this word",
         mascot_cheer_known: "Excellent! One less word to study!",
-        learn_complete_all: "Wow! You have mastered the entire vocabulary pool! Let's take a test! 🎉"
+        learn_complete_all: "Wow! You have mastered the entire vocabulary pool! Let's take a test! 🎉",
+        auto_pronounce: "Auto-pronounce root word while learning"
     },
     vi: {
         ready: "Sẵn sàng chưa?",
@@ -182,7 +184,8 @@ const I18N_STRINGS = {
         reset_known_confirm: "Bạn có chắc chắn muốn học lại từ đầu tất cả các từ đã đánh dấu 'Đã thuộc' không?",
         mark_known: "Đã thuộc từ này",
         mascot_cheer_known: "Xuất sắc! Bớt đi một từ cần học rồi nhé!",
-        learn_complete_all: "Wow! Bạn đã chinh phục toàn bộ kho từ vựng này rồi! Hãy bắt đầu làm bài test nhé! 🎉"
+        learn_complete_all: "Wow! Bạn đã chinh phục toàn bộ kho từ vựng này rồi! Hãy bắt đầu làm bài test nhé! 🎉",
+        auto_pronounce: "Tự động phát âm từ gốc khi học"
     }
 };
 
@@ -192,7 +195,7 @@ const I18N_STRINGS = {
 function t(key, params = {}) {
     const lang = currentState.langConfig.uiLang || 'vi';
     let str = I18N_STRINGS[lang][key] || key;
-    
+
     // Simple param replacement
     for (const p in params) {
         str = str.replace(`{${p}}`, params[p]);
@@ -207,14 +210,14 @@ function toggleUILang() {
     const current = currentState.langConfig.uiLang || 'vi';
     const next = current === 'vi' ? 'en' : 'vi';
     currentState.langConfig.uiLang = next;
-    
+
     // Persist
     localStorage.setItem('vocab_lang_config', JSON.stringify(currentState.langConfig));
-    
+
     // Update UI button text if it exists (in index.html)
     const btnLang = document.getElementById('btn-lang');
     if (btnLang) btnLang.textContent = next.toUpperCase();
-    
+
     render();
 }
 window.toggleUILang = toggleUILang;
@@ -225,10 +228,10 @@ window.toggleUILang = toggleUILang;
 function toggleViewportMode() {
     const next = currentState.viewportMode === 'web' ? 'mobile' : 'web';
     currentState.viewportMode = next;
-    
+
     // Persist
     localStorage.setItem('vocab_viewport_mode', next);
-    
+
     applyViewportMode(next);
 }
 window.toggleViewportMode = toggleViewportMode;
@@ -238,14 +241,14 @@ window.toggleViewportMode = toggleViewportMode;
  */
 function applyViewportMode(mode) {
     const isMobile = mode === 'mobile';
-    
+
     // Update Body Class
     if (isMobile) {
         document.body.classList.add('is-mobile-mode');
     } else {
         document.body.classList.remove('is-mobile-mode');
     }
-    
+
     // Update Meta Viewport
     let viewport = document.querySelector('meta[name="viewport"]');
     if (viewport) {
@@ -255,7 +258,7 @@ function applyViewportMode(mode) {
             viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
         }
     }
-    
+
     // Update Button Icon
     const btnViewport = document.getElementById('btn-viewport-mode');
     if (btnViewport) {
@@ -310,7 +313,7 @@ function init() {
 
         // Deduplicate and merge VOCAB_DATA with custom_vocab
         const vocabMap = new Map();
-        
+
         // Add base vocab first if not ignored
         if (!currentState.langConfig.ignoreBase) {
             window.VOCAB_DATA.forEach(item => {
@@ -324,7 +327,7 @@ function init() {
         if (customVocabRaw) {
             try {
                 let customVocab = JSON.parse(customVocabRaw);
-                
+
                 // RUNTIME MIGRATION
                 let needsReSave = false;
                 customVocab = customVocab.map(item => {
@@ -373,12 +376,12 @@ function init() {
         } else {
             currentState.knownWords = [];
         }
-        
+
         // Init Dark Mode
         if (localStorage.getItem('vocab_theme') === 'dark') {
             document.documentElement.classList.add('dark');
         }
-        
+
         // Init Streak
         updateStreak();
 
@@ -392,7 +395,7 @@ function init() {
             currentState.viewportMode = savedViewport;
         }
         applyViewportMode(currentState.viewportMode);
-        
+
         // Thiết lập tính năng kéo thả cho Mascot
         setupMascotDraggable();
     } else {
@@ -418,7 +421,7 @@ function factoryReset() {
         currentState.history = [];
         currentState.incorrectWords = [];
         currentState.knownWords = [];
-        
+
         // Force immediate clean reload
         window.location.href = window.location.pathname;
     }
@@ -468,10 +471,10 @@ function markAsKnown(wordT1) {
         currentState.knownWords.push(normT1);
         saveKnownWords();
     }
-    
+
     // Kích hoạt Mascot cổ vũ
     triggerMascot('cheer', t('mascot_cheer_known'));
-    
+
     // Chuyển slide mượt mà hoặc hoàn thành học tập
     const activeVocab = getActiveLearnVocab();
     if (activeVocab.length === 0) {
@@ -492,7 +495,7 @@ function updateStreak() {
     const today = new Date().toLocaleDateString('vi-VN');
     let streak = parseInt(localStorage.getItem('vocab_streak') || '0');
     const lastActive = localStorage.getItem('vocab_last_active');
-    
+
     if (lastActive !== today) {
         // If not visited today, check if visited yesterday
         const yesterday = new Date();
@@ -507,7 +510,7 @@ function updateStreak() {
         localStorage.setItem('vocab_last_active', today);
         localStorage.setItem('vocab_streak', streak);
     }
-    
+
     const streakEl = document.getElementById('streak-count');
     if (streakEl) streakEl.textContent = streak;
 }
@@ -516,15 +519,15 @@ function triggerMascot(type, message = '') {
     const mascot = document.getElementById('mascot');
     const bubble = document.getElementById('mascot-bubble');
     if (!mascot) return;
-    
+
     // Reset animation
     mascot.className = 'filter drop-shadow-xl select-none cursor-pointer hover:scale-110 transition-transform origin-bottom';
     void mascot.offsetWidth; // trigger reflow
-    
+
     if (type === 'cheer') mascot.classList.add('mascot-cheer');
     if (type === 'warn') mascot.classList.add('mascot-warn');
     if (type === 'error') mascot.classList.add('mascot-error');
-    
+
     if (message && bubble) {
         bubble.textContent = message;
         bubble.classList.remove('opacity-0');
@@ -627,11 +630,11 @@ function startNewTest(onlyIncorrect = false) {
     }
 
     const shuffledPool = shuffle([...pool]);
-    
+
     // Use preferred size, capped by available words
     let requestedSize = currentState.preferredTestSize;
     if (requestedSize === 'all') requestedSize = shuffledPool.length;
-    
+
     const testSize = Math.min(requestedSize, shuffledPool.length);
     const testSet = shuffledPool.slice(0, testSize);
 
@@ -673,7 +676,7 @@ function generateQuestion(word, pool) {
             .filter(w => w.id !== word.id)
             .sort(() => 0.5 - Math.random())
             .slice(0, 4);
-        
+
         const set = [word, ...others];
         q.pairs = set.map(w => ({
             id: w.id,
@@ -682,8 +685,8 @@ function generateQuestion(word, pool) {
         }));
 
         // Pre-shuffle columns for the UI
-        q.shuffledLeft = shuffle(q.pairs.map(p => ({id: p.id, val: p.left})));
-        q.shuffledRight = shuffle(q.pairs.map(p => ({id: p.id, val: p.right})));
+        q.shuffledLeft = shuffle(q.pairs.map(p => ({ id: p.id, val: p.left })));
+        q.shuffledRight = shuffle(q.pairs.map(p => ({ id: p.id, val: p.right })));
     }
 
     return q;
@@ -694,7 +697,7 @@ function generateQuestion(word, pool) {
  */
 function render() {
     const mainContent = document.getElementById('main-content');
-    
+
     // Apply animation class
     mainContent.classList.remove('animate-fade-in');
     void mainContent.offsetWidth; // Trigger reflow
@@ -725,17 +728,17 @@ let historyChartInstance = null;
 function renderChart() {
     const canvas = document.getElementById('historyChart');
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     // Reverse to show oldest to newest left to right
-    const data = [...currentState.history].slice(0, 10).reverse(); 
-    
+    const data = [...currentState.history].slice(0, 10).reverse();
+
     if (historyChartInstance) historyChartInstance.destroy();
-    
+
     const isDark = document.documentElement.classList.contains('dark');
     const textColor = isDark ? '#cbd5e1' : '#64748b';
     const gridColor = isDark ? '#334155' : '#f1f5f9';
-    
+
     historyChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
@@ -782,9 +785,9 @@ function renderHome(container) {
                     ${[10, 20, 50, 'all'].map(size => `
                         <button onclick="setTestSize('${size}')" 
                             class="px-5 py-2.5 rounded-2xl font-bold transition-all border-2 
-                            ${currentState.preferredTestSize == size 
-                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' 
-                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'}">
+                            ${currentState.preferredTestSize == size
+            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
+            : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'}">
                             ${size === 'all' ? `<i class="fa-solid fa-infinity"></i> ${t('all')}` : size}
                         </button>
                     `).join('')}
@@ -822,6 +825,11 @@ function renderHome(container) {
                     <label for="skip-known-checkbox" class="text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">${t('skip_known_vocab')}</label>
                 </div>
 
+                <div class="flex items-center gap-2 mb-4 ml-1">
+                    <input type="checkbox" id="auto-pronounce-checkbox" onchange="window.toggleAutoPronounce(this.checked)" ${currentState.langConfig.autoPronounce ? 'checked' : ''} class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="auto-pronounce-checkbox" class="text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">${t('auto_pronounce')}</label>
+                </div>
+
                 <textarea id="vocab-import-input" class="w-full h-32 p-4 border-2 border-slate-100 dark:border-slate-600 bg-transparent dark:text-white rounded-2xl mb-1 focus:border-indigo-500 outline-none transition resize-y" placeholder="${t('import_placeholder')}"></textarea>
                 <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-4 ml-1 uppercase tracking-tighter">${t('import_help')}</p>
                 <div class="flex justify-between items-center flex-wrap gap-4">
@@ -840,7 +848,7 @@ function renderHome(container) {
             ${currentState.incorrectWords.length > 0 ? `
                 <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40 border border-amber-200 dark:border-amber-700/50 p-6 rounded-[2rem] flex flex-col md:flex-row gap-4 items-center justify-between glassmorphism">
                     <div>
-                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg"><i class="fa-solid fa-triangle-exclamation"></i> ${t('review_count', {n: currentState.incorrectWords.length})}</h4>
+                        <h4 class="font-bold text-amber-800 dark:text-amber-400 text-lg"><i class="fa-solid fa-triangle-exclamation"></i> ${t('review_count', { n: currentState.incorrectWords.length })}</h4>
                         <p class="text-amber-700 dark:text-amber-500 text-sm">${t('review_desc')}</p>
                     </div>
                     <div class="flex gap-3 w-full md:w-auto">
@@ -863,7 +871,7 @@ function renderHome(container) {
             </div>
         </div>
     `;
-    
+
     // Trigger mascot warn if there are words to review
     if (currentState.incorrectWords.length > 0) {
         setTimeout(() => triggerMascot('warn', t('mascot_warn')), 500);
@@ -872,7 +880,7 @@ function renderHome(container) {
 
 function renderLearnMode(container) {
     const activeVocab = getActiveLearnVocab();
-    
+
     if (!activeVocab || activeVocab.length === 0) {
         container.innerHTML = `
             <div class="text-center py-20 bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 glassmorphism animate-fade-in">
@@ -883,12 +891,12 @@ function renderLearnMode(container) {
         `;
         return;
     }
-    
+
     // Ensure currentIndex is in valid range
     if (currentState.currentIndex >= activeVocab.length) {
         currentState.currentIndex = Math.max(0, activeVocab.length - 1);
     }
-    
+
     const word = activeVocab[currentState.currentIndex];
     container.innerHTML = `
         <div class="flex flex-col items-center">
@@ -898,7 +906,7 @@ function renderLearnMode(container) {
                     ${t('home')}
                 </button>
                 <div class="text-slate-500 font-medium bg-white px-4 py-1 rounded-full border border-slate-200 shadow-sm dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600">
-                    ${t('word_progress', {n: currentState.currentIndex + 1, m: activeVocab.length})}
+                    ${t('word_progress', { n: currentState.currentIndex + 1, m: activeVocab.length })}
                 </div>
                 <div class="w-20"></div> <!-- Spacer for symmetry -->
             </div>
@@ -907,10 +915,22 @@ function renderLearnMode(container) {
                 <div class="relative w-full h-full duration-500 preserve-3d transition-transform ${currentState.isFlipped ? 'rotate-y-180' : ''}">
                     <div class="absolute inset-0 backface-hidden bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl border-2 border-indigo-50 dark:border-slate-700 flex flex-col items-center justify-center p-10 text-center glassmorphism group-hover:-translate-y-2 transition-transform">
                         <h3 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-slate-100 leading-tight">${word.t1}</h3>
-                        <div class="absolute bottom-6 text-xs text-slate-400 uppercase tracking-widest font-bold"><i class="fa-solid fa-hand-pointer"></i> ${t('flip_to', {lang: currentState.langConfig.l2})}</div>
+                        <!-- Pronunciation Button for L1 (Root word) -->
+                        <button onclick="event.stopPropagation(); window.speakWord('${word.t1.replace(/'/g, "\\'")}', currentState.langConfig.l1)" 
+                            class="mt-4 w-10 h-10 flex items-center justify-center bg-indigo-50 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-slate-600 text-indigo-600 dark:text-indigo-400 rounded-full transition-transform active:scale-95 shadow-sm"
+                            title="Nghe phát âm">
+                            <i class="fa-solid fa-volume-high text-base"></i>
+                        </button>
+                        <div class="absolute bottom-6 text-xs text-slate-400 uppercase tracking-widest font-bold"><i class="fa-solid fa-hand-pointer"></i> ${t('flip_to', { lang: currentState.langConfig.l2 })}</div>
                     </div>
                     <div class="absolute inset-0 backface-hidden bg-gradient-to-br from-indigo-600 to-purple-600 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center p-10 text-center rotate-y-180">
                         <h3 class="text-3xl md:text-5xl font-bold text-white leading-relaxed">${word.t2}</h3>
+                        <!-- Pronunciation Button for L2 (Meaning) -->
+                        <button onclick="event.stopPropagation(); window.speakWord('${word.t2.replace(/'/g, "\\'")}', currentState.langConfig.l2)" 
+                            class="mt-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-transform active:scale-95 shadow-sm"
+                            title="Nghe nghĩa dịch">
+                            <i class="fa-solid fa-volume-high text-base"></i>
+                        </button>
                         <div class="absolute bottom-6 text-xs text-indigo-200 uppercase tracking-widest font-bold">${word.t1}</div>
                     </div>
                 </div>
@@ -935,6 +955,38 @@ function renderLearnMode(container) {
             </div>
         </div>
     `;
+
+    // Auto-pronounce Root Word L1 when drawing card (if enabled)
+    if (currentState.langConfig.autoPronounce && !currentState.isFlipped) {
+        if (window.lastSpokenWordId !== word.id) {
+            window.lastSpokenWordId = word.id;
+            setTimeout(() => {
+                const activeVocabCheck = getActiveLearnVocab();
+                if (currentState.mode === 'learn' &&
+                    currentState.currentIndex < activeVocabCheck.length &&
+                    activeVocabCheck[currentState.currentIndex].id === word.id &&
+                    !currentState.isFlipped) {
+                    window.speakWord(word.t1, currentState.langConfig.l1);
+                }
+            }, 200);
+        }
+    }
+
+    // Auto-pronounce Meaning L2 when flipped (if enabled)
+    if (currentState.langConfig.autoPronounce && currentState.isFlipped) {
+        if (window.lastSpokenFlipId !== word.id) {
+            window.lastSpokenFlipId = word.id;
+            setTimeout(() => {
+                const activeVocabCheck = getActiveLearnVocab();
+                if (currentState.mode === 'learn' &&
+                    currentState.currentIndex < activeVocabCheck.length &&
+                    activeVocabCheck[currentState.currentIndex].id === word.id &&
+                    currentState.isFlipped) {
+                    window.speakWord(word.t2, currentState.langConfig.l2);
+                }
+            }, 200);
+        }
+    }
 }
 
 function renderTestMode(container) {
@@ -983,9 +1035,9 @@ function renderQuestionType(q) {
         return q.options.map(opt => `
             <button onclick="saveAnswer('${opt}')" 
                 class="w-full p-4 text-left text-lg font-medium border-2 rounded-2xl transition dark:text-slate-200 
-                ${currentState.userAnswers[currentState.currentIndex] === opt 
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' 
-                    : 'border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'}">
+                ${currentState.userAnswers[currentState.currentIndex] === opt
+                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
+                : 'border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'}">
                 ${opt}
             </button>
         `).join('');
@@ -996,10 +1048,10 @@ function renderQuestionType(q) {
                 <!-- Cột Trái -->
                 <div class="space-y-3">
                     ${q.shuffledLeft.map(item => {
-                        const isSelected = ms.selected?.side === 'left' && ms.selected?.id === item.id;
-                        const isMatched = ms.matchedIds.includes(item.id);
-                        const isError = ms.errorId === item.id;
-                        return `
+            const isSelected = ms.selected?.side === 'left' && ms.selected?.id === item.id;
+            const isMatched = ms.matchedIds.includes(item.id);
+            const isError = ms.errorId === item.id;
+            return `
                             <div onclick="handleMatchingClick('left', '${item.val}', ${item.id})" 
                                 class="matching-card border-2 border-slate-100 rounded-2xl bg-white shadow-sm
                                 ${isSelected ? 'selected' : ''} 
@@ -1008,15 +1060,15 @@ function renderQuestionType(q) {
                                 ${item.val}
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
                 <!-- Cột Phải -->
                 <div class="space-y-3">
                     ${q.shuffledRight.map(item => {
-                        const isSelected = ms.selected?.side === 'right' && ms.selected?.id === item.id;
-                        const isMatched = ms.matchedIds.includes(item.id);
-                        const isError = ms.errorId === item.id;
-                        return `
+            const isSelected = ms.selected?.side === 'right' && ms.selected?.id === item.id;
+            const isMatched = ms.matchedIds.includes(item.id);
+            const isError = ms.errorId === item.id;
+            return `
                             <div onclick="handleMatchingClick('right', '${item.val}', ${item.id})" 
                                 class="matching-card border-2 border-slate-100 rounded-2xl bg-white shadow-sm
                                 ${isSelected ? 'selected' : ''} 
@@ -1025,7 +1077,7 @@ function renderQuestionType(q) {
                                 ${item.val}
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
             </div>
             ${ms.matchedIds.length === 5 ? `
@@ -1042,7 +1094,7 @@ function renderQuestionType(q) {
  */
 function handleMatchingClick(side, val, id) {
     const ms = currentState.matchingState;
-    
+
     // Nếu đã matched rồi thì thôi
     if (ms.matchedIds.includes(id)) return;
 
@@ -1058,7 +1110,7 @@ function handleMatchingClick(side, val, id) {
             // Khớp!
             ms.matchedIds.push(id);
             ms.selected = null;
-            
+
             // Nếu đã ghép xong tất cả 5 cặp
             if (ms.matchedIds.length === 5) {
                 saveAnswer(true); // Đánh dấu là đúng
@@ -1071,7 +1123,7 @@ function handleMatchingClick(side, val, id) {
             const secondId = id;
             ms.errorId = firstId; // Hiệu ứng rung cho cả 2? Ở đây demo rung cái đầu
             ms.selected = null;
-            
+
             setTimeout(() => {
                 ms.errorId = null;
                 render();
@@ -1106,7 +1158,7 @@ function focusInput() {
 function nextQuestion() {
     // Reset matching state for next question
     currentState.matchingState = { selected: null, matchedIds: [], errorId: null };
-    
+
     if (currentState.currentIndex < currentState.testQuestions.length - 1) {
         currentState.currentIndex++;
         render();
@@ -1184,7 +1236,7 @@ function renderResultMode(container) {
                 <span class="text-7xl drop-shadow-lg">${currentState.finalScore >= 80 ? '🏆' : currentState.finalScore >= 50 ? '👏' : '📚'}</span>
             </div>
             <h2 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600 mb-2 drop-shadow-sm">${currentState.finalScore}%</h2>
-            <p class="text-slate-500 dark:text-slate-400 mb-10 text-lg">${t('result_desc', {n: Math.round(currentState.finalScore * currentState.testQuestions.length / 100), m: currentState.testQuestions.length})}</p>
+            <p class="text-slate-500 dark:text-slate-400 mb-10 text-lg">${t('result_desc', { n: Math.round(currentState.finalScore * currentState.testQuestions.length / 100), m: currentState.testQuestions.length })}</p>
             
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <button onclick="switchMode('home')" class="py-4 px-8 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl font-bold hover:scale-105 transition"><i class="fa-solid fa-house"></i> ${t('go_home')}</button>
@@ -1203,6 +1255,19 @@ document.addEventListener('keydown', (e) => {
             e.preventDefault();
             flipCard();
         }
+        // Keyboard shortcut for speech synthesis (v or s keys)
+        if (e.key === 'v' || e.key === 's') {
+            e.preventDefault();
+            const activeVocab = getActiveLearnVocab();
+            const word = activeVocab[currentState.currentIndex];
+            if (word) {
+                if (currentState.isFlipped) {
+                    window.speakWord(word.t2, currentState.langConfig.l2);
+                } else {
+                    window.speakWord(word.t1, currentState.langConfig.l1);
+                }
+            }
+        }
     }
     if (currentState.mode === 'test' && e.key === 'Enter') {
         nextQuestion();
@@ -1216,6 +1281,7 @@ function nextWord() {
     if (currentState.currentIndex < activeVocab.length - 1) {
         currentState.currentIndex++;
         currentState.isFlipped = false;
+        window.lastSpokenFlipId = null; // Reset translation flip spoken cache
         render();
     }
 }
@@ -1223,6 +1289,7 @@ function prevWord() {
     if (currentState.currentIndex > 0) {
         currentState.currentIndex--;
         currentState.isFlipped = false;
+        window.lastSpokenFlipId = null; // Reset translation flip spoken cache
         render();
     }
 }
@@ -1288,7 +1355,7 @@ function parseVocabData(rawData) {
         if (parts.length >= 2) {
             const t1Word = parts[0].trim();
             const t2Word = parts[1].trim();
-            
+
             if (!t1Word || !t2Word) continue;
 
             const t1Lower = t1Word.toLowerCase();
@@ -1324,7 +1391,7 @@ function importVocab() {
     const l1Input = document.getElementById('l1-name-input');
     const l2Input = document.getElementById('l2-name-input');
     const msg = document.getElementById('import-msg');
-    
+
     if (!input || !input.value.trim()) return;
 
     // Capture pending language names
@@ -1351,7 +1418,7 @@ function confirmImport() {
     try {
         const saved = localStorage.getItem('custom_vocab');
         if (saved) existingCustom = JSON.parse(saved);
-    } catch(e) {}
+    } catch (e) { }
 
     let addedCount = 0;
     let updatedCount = 0;
@@ -1366,9 +1433,9 @@ function confirmImport() {
             const currentMeanings = existingWord.t2.split(',').map(m => normalize(m));
             const inputMeanings = item.t2.split(',').map(m => m.trim());
             const newMeanings = inputMeanings.filter(nm => !currentMeanings.includes(normalize(nm)));
-            
+
             const finalT2 = existingWord.t2 + ', ' + newMeanings.join(', ');
-            
+
             const customIndex = existingCustom.findIndex(w => w.t1.toLowerCase().trim() === t1Lower);
             if (customIndex !== -1) {
                 existingCustom[customIndex].t2 = finalT2;
@@ -1388,14 +1455,14 @@ function confirmImport() {
         currentState.langConfig.l1 = currentState.langConfig.pendingL1;
         currentState.langConfig.l2 = currentState.langConfig.pendingL2;
         localStorage.setItem('vocab_lang_config', JSON.stringify(currentState.langConfig));
-        
+
         init();
         const input = document.getElementById('vocab-import-input');
         if (input) input.value = '';
-        
+
         switchMode('home');
-        const successMsg = currentState.langConfig.uiLang === 'vi' 
-            ? `Thành công! Đã thêm ${addedCount} và cập nhật ${updatedCount}.` 
+        const successMsg = currentState.langConfig.uiLang === 'vi'
+            ? `Thành công! Đã thêm ${addedCount} và cập nhật ${updatedCount}.`
             : `Success! Added ${addedCount} and updated ${updatedCount}.`;
         alert(successMsg);
     } else {
@@ -1409,7 +1476,7 @@ function renderImportReview(container) {
         <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 glassmorphism flex flex-col h-[80vh] animate-slide-up">
             <div class="mb-6">
                 <h2 class="text-2xl font-black text-slate-700 dark:text-slate-100">${t('import_review_title')}</h2>
-                <p class="text-slate-500 dark:text-slate-400 mt-1">${t('import_review_desc', {n})}</p>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">${t('import_review_desc', { n })}</p>
             </div>
 
             <div id="review-table-container" class="flex-1 overflow-y-auto border border-slate-100 dark:border-slate-700 rounded-2xl mb-6 relative bg-slate-50/30 dark:bg-slate-900/30">
@@ -1486,13 +1553,13 @@ function exportVocabToExcel() {
         alert("Không có dữ liệu từ vựng để xuất!");
         return;
     }
-    
+
     const config = currentState.langConfig;
     // Create TSV content
     const header = `${config.l1}\t${config.l2}\n`;
     const rows = currentState.vocab.map(w => `${w.t1}\t${w.t2}`).join('\n');
     const tsvContent = header + rows;
-    
+
     // Create a Blob and trigger download
     const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1509,16 +1576,16 @@ function handleFileUpload(event) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         try {
             const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
+            const workbook = XLSX.read(data, { type: 'array' });
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
-            
+
             // Convert to array of arrays (header: 1)
-            const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-            
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
             let tsvContent = "";
             rows.forEach(row => {
                 if (row && row.length >= 2) {
@@ -1572,7 +1639,7 @@ function setupDragAndDrop() {
     textarea.addEventListener('drop', (e) => {
         preventDefault(e);
         textarea.classList.remove('border-indigo-500', 'bg-indigo-50/50', 'dark:bg-indigo-900/20');
-        
+
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             const file = files[0];
@@ -1727,7 +1794,7 @@ function setupMascotDraggable() {
     // Tự động kiểm tra giữ mascot trong viewport khi resize màn hình
     window.addEventListener('resize', () => {
         if (!container.style.left) return;
-        
+
         const rect = container.getBoundingClientRect();
         const containerWidth = container.offsetWidth || 96;
         const containerHeight = container.offsetHeight || 96;
@@ -1740,7 +1807,58 @@ function setupMascotDraggable() {
     });
 }
 
+/**
+ * Map language name to BCP-47 code for Web Speech synthesis
+ */
+function getLangCode(langName) {
+    if (!langName) return 'en-US';
+    const lower = langName.toLowerCase().trim();
+    if (lower.includes('en') || lower.includes('anh')) return 'en-US';
+    if (lower.includes('vi') || lower.includes('việt')) return 'vi-VN';
+    if (lower.includes('ja') || lower.includes('nhật')) return 'ja-JP';
+    if (lower.includes('ko') || lower.includes('hàn')) return 'ko-KR';
+    if (lower.includes('zh') || lower.includes('trung') || lower.includes('cn')) return 'zh-CN';
+    if (lower.includes('fr') || lower.includes('pháp')) return 'fr-FR';
+    if (lower.includes('de') || lower.includes('đức') || lower.includes('ger')) return 'de-DE';
+    if (lower.includes('es') || lower.includes('tây')) return 'es-ES';
+    if (lower.includes('ru') || lower.includes('nga')) return 'ru-RU';
+    return 'en-US'; // Default English
+}
+
+/**
+ * Pronounce word using Web Speech API SpeechSynthesis
+ */
+function speakWord(text, langName) {
+    if (!('speechSynthesis' in window)) {
+        console.warn('Trình duyệt không hỗ trợ Web Speech API.');
+        return;
+    }
+
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    if (!text) return;
+
+    // Clean parentheses
+    let cleanText = text.replace(/\(.*?\)/g, '').trim();
+    if (!cleanText) cleanText = text;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = getLangCode(langName);
+    utterance.rate = 0.95;
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function toggleAutoPronounce(checked) {
+    currentState.langConfig.autoPronounce = checked;
+    localStorage.setItem('vocab_lang_config', JSON.stringify(currentState.langConfig));
+}
+
 // Ensure global access
+window.getLangCode = getLangCode;
+window.speakWord = speakWord;
+window.toggleAutoPronounce = toggleAutoPronounce;
 window.clearReviewHistory = clearReviewHistory;
 window.clearRecentHistory = clearRecentHistory;
 window.importVocab = importVocab;
@@ -1748,8 +1866,8 @@ window.confirmImport = confirmImport;
 window.exportVocabToExcel = exportVocabToExcel;
 window.handleFileUpload = handleFileUpload;
 
-window.onload = () => { 
-    init(); 
-    render(); 
+window.onload = () => {
+    init();
+    render();
     updateNavButtons(currentState.mode);
 };
