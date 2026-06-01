@@ -14,18 +14,22 @@
 
 - 🌏 **Hỗ trợ đa ngôn ngữ (i18n):** Giao diện linh hoạt giữa Tiếng Việt và Tiếng Anh.
 - 🧩 **Tùy biến cặp ngôn ngữ:** Tự định nghĩa tên ngôn ngữ (L1/L2) cho bộ từ vựng của riêng bạn.
-- 📖 **Chế độ Học (Flashcards):** Trải nghiệm lật thẻ mượt mà với hiệu ứng glassmorphism hiện đại.
+- 📖 **Chế độ Học (Flashcards) nâng cấp:** 
+  - Trải nghiệm lật thẻ mượt mà với hiệu ứng glassmorphism hiện đại.
+  - Tính năng **"Đã thuộc" (Mark as Known/Memorized)** để tự động loại bỏ các từ đã biết khỏi vòng lặp học tập, giúp tập trung học từ mới.
 - 📝 **Chế độ Kiểm tra (Test) thông minh:** 
   - Đa dạng loại câu hỏi: Nhập liệu, Trắc nghiệm, Ghép cặp.
   - Tự động xáo trộn và tạo câu hỏi từ cả hai chiều (L1 ↔ L2).
 - 📥 **Quản lý dữ liệu mạnh mẽ:**
   - **Nhập liệu linh hoạt:** Hỗ trợ copy-paste từ Excel với nhiều dấu phân cách (`Tab`, `:`, `-`, `|`).
   - **Tải file trực tiếp:** Hỗ trợ upload file `.xlsx`, `.xls`, `.csv`.
-  - **Drag & Drop:** Kéo thả file trực tiếp vào vùng nhập liệu để xử lý tức thì.
+  - **Drag & Drop:** Kéo thả file trực tiếp vào vùng nhập liệu để xử lý tức thì (hỗ trợ đầy đủ cả trên thiết bị di động).
   - **Bảng kiểm soát (Review):** Xem và xác nhận dữ liệu (từ mới, cập nhật nghĩa) trước khi lưu vào máy.
-- 📊 **Theo dõi tiến độ:** Biểu đồ thống kê kết quả, streak học tập hàng ngày và tính năng ôn tập từ vựng làm sai.
-- 📱 **Hỗ trợ Mobile (Adaptive Mode):** Chế độ tối ưu riêng cho điện thoại, khóa tỷ lệ khung hình và ngăn cuộn đàn hồi (elastic scroll) để mang lại trải nghiệm giống như ứng dụng di động.
-- 🌗 **Chế độ tối (Dark Mode):** Giao diện dịu mắt cho việc học vào ban đêm.
+- 📊 **Theo dõi tiến độ thông minh:** Biểu đồ thống kê kết quả, streak học tập hàng ngày, theo dõi trực quan số lượng/phần trăm từ "Đã thuộc" theo thời gian thực và ôn tập lại các từ làm sai.
+- 📱 **Hỗ trợ Mobile tối ưu (Adaptive Mode):** 
+  - Chế độ tối ưu riêng cho điện thoại, khóa tỷ lệ khung hình và ngăn cuộn đàn hồi (elastic scroll) để mang lại trải nghiệm mượt mà như ứng dụng gốc.
+  - Tự động thu nhỏ Mascot chú trâu (Buffalo Mascot) 50% giúp giải phóng không gian màn hình nhỏ, tinh tế và dễ nhìn hơn.
+- 🌗 **Chế độ tối (Dark Mode):** Giao diện dịu mắt cho việc học vào ban đêm, tối ưu hóa độ tương phản và hiển thị Mascot.
 
 ### 🖼️ Giao diện ứng dụng
 
@@ -54,10 +58,16 @@
 Để tối ưu hóa trải nghiệm trên điện thoại:
 1. Mở menu **Cài đặt**.
 2. Bật tùy chọn **"Chế độ Mobile"**.
-3. Ứng dụng sẽ tự động điều chỉnh viewport, ngăn chặn việc thu phóng (zoom) không mong muốn và khóa hiệu ứng cuộn của hệ điều hành, giúp giao diện ổn định hơn khi thao tác nhanh.
+3. Ứng dụng sẽ tự động điều chỉnh viewport, ngăn chặn việc thu phóng (zoom) không mong muốn và khóa hiệu ứng cuộn của hệ điều hành. Đồng thời, Mascot trâu được tự động thu nhỏ 50% để tránh che nội dung, giúp giao diện ổn định hơn khi thao tác nhanh.
 
+#### 4. Tính năng "Đã thuộc" (Memorized Words)
+Để tăng tốc ôn tập và quản lý từ vựng đã biết:
+1. Trong màn hình **Học (Learn)**, bấm nút **"Đã thuộc từ này"** (màu xanh lá) hoặc nhấn phím tắt để đánh dấu từ đã nhớ. Mascot trâu sẽ xuất hiện chúc mừng rực rỡ và thẻ tự động trượt sang từ tiếp theo.
+2. Tại **Trang chủ**, tiến độ được cập nhật theo thời gian thực dưới dạng `Đã thuộc: X / Y từ (Z%)`.
+3. Tích chọn **"Bỏ qua từ vựng đã nhớ khi học"** trên trang chủ nếu bạn chỉ muốn ôn các từ chưa thuộc.
+4. Muốn học lại từ đầu? Bấm nút **"Đặt lại từ đã nhớ"** trong mục **Quản lý từ vựng** để reset trạng thái.
 
-#### 4. Phím tắt hữu ích
+#### 5. Phím tắt hữu ích
 - **Chế độ Học (Learn):**
   - `Mũi tên Phải`: Sang từ tiếp theo.
   - `Mũi tên Trái`: Quay lại từ trước.
@@ -111,18 +121,22 @@ A universal, offline web application for learning vocabulary in any language pai
 
 - 🌏 **Internationalization (i18n):** Seamlessly switch the UI between English and Vietnamese.
 - 🧩 **Custom Language Pairs:** Define your own language names (L1/L2) for personalized study sets.
-- 📖 **Learning Mode (Flashcards):** Smooth card-flipping experience with a premium glassmorphism design.
+- 📖 **Upgraded Learning Mode (Flashcards):** 
+  - Smooth card-flipping experience with a premium glassmorphism design.
+  - Integrated **"Mark as Known" (Memorized)** feature to automatically filter out known words and focus strictly on new vocabulary.
 - 📝 **Smart Test Mode:** 
   - Multiple question types: Written (Typing), Multiple Choice, and Matching.
   - Automatic shuffling and bi-directional testing (L1 ↔ L2).
 - 📥 **Advanced Data Management:**
   - **Flexible Import:** Copy-paste from Excel with support for various delimiters (`Tab`, `:`, `-`, `|`).
   - **Direct File Upload:** Supports `.xlsx`, `.xls`, and `.csv` files.
-  - **Drag & Drop:** Drop your files directly onto the import area for instant processing.
+  - **Drag & Drop:** Drop your files directly onto the import area for instant processing (fully compatible with mobile devices).
   - **Data Review Table:** Verify changes (new words, updated meanings) before committing to storage.
-- 📊 **Progress Tracking:** Interactive statistics charts, daily streaks, and focused review for incorrect words.
-- 📱 **Mobile Support (Adaptive Mode):** A specialized mode for mobile devices that locks the viewport and disables elastic scrolling for a native app-like experience.
-- 🌗 **Dark Mode:** Easy on the eyes for late-night study sessions.
+- 📊 **Smart Progress Tracking:** Interactive statistics charts, daily streaks, visual count & percentage of "Memorized" words in real-time, and focused review for incorrect words.
+- 📱 **Optimized Mobile Support (Adaptive Mode):** 
+  - A specialized mode for mobile devices that locks the viewport and disables elastic scrolling for a native app-like experience.
+  - Auto-scaled Mascot (50% size reduction) to maximize screen estate and avoid visual clutter on small screens.
+- 🌗 **Dark Mode:** Easy on the eyes for late-night study sessions, with optimized contrast and mascot visibility.
 
 ### 🖼️ Application Interface
 
@@ -151,10 +165,16 @@ To switch to an entirely new set of languages:
 To optimize your experience on mobile devices:
 1. Open the **Settings** menu.
 2. Toggle **"Mobile Mode"** on.
-3. The app will automatically adjust the viewport, prevent unwanted zooming, and lock OS-level elastic scrolling, ensuring a stable interface during fast interactions.
+3. The app will automatically adjust the viewport, prevent unwanted zooming, lock OS-level elastic scrolling, and automatically scale down the buffalo mascot to 50% size to ensure a highly stable, clean interface during rapid interactions.
 
+#### 4. "Memorized Words" Feature
+Accelerate your learning process by hiding words you already know:
+1. In **Learn Mode**, click the green **"I know this word"** button or use keyboard shortcuts. The mascot will celebrate, and the card will slide smoothly to the next word.
+2. Real-time statistics are updated on the **Home Screen** as `Memorized: X / Y words (Z%)`.
+3. Check the **"Skip memorized words while learning"** option on the home screen to focus only on unfamiliar words.
+4. To start over, click **"Reset memorized"** in the **Vocabulary Management** section.
 
-#### 4. Useful Keyboard Shortcuts
+#### 5. Useful Keyboard Shortcuts
 - **Learning Mode (Learn):**
   - `Right Arrow`: Next word.
   - `Left Arrow`: Previous word.

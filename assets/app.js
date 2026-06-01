@@ -10,6 +10,7 @@ let currentState = {
     vocab: [],
     currentIndex: 0,
     isFlipped: false,
+    knownWords: [], // List of normalized word strings (t1 lowercase) marked as memorized
 
     // Test State
     testQuestions: [],
@@ -33,6 +34,7 @@ let currentState = {
         l2: 'Vietnamese',
         uiLang: 'vi', // 'en' | 'vi'
         ignoreBase: false,
+        skipKnown: true, // Default: skip known words when studying flashcards
         pendingL1: '',
         pendingL2: ''
     },
@@ -103,7 +105,16 @@ const I18N_STRINGS = {
         no_vocab_warning: "No vocabulary found. Please add new words or check your settings.",
         no_vocab_test_warning: "No valid vocabulary to start the test.",
         import_placeholder: "Example:\napple: quả táo\nbanana - quả chuối\ncherry | quả anh đào",
-        import_help: "Supported formats: Tab, Colon (:), Dash (-), Pipe (|)"
+        import_help: "Supported formats: Tab, Colon (:), Dash (-), Pipe (|)",
+
+        // Flashcard known words keys
+        stats_known: "Memorized",
+        skip_known_vocab: "Skip memorized words while learning",
+        reset_known: "Reset memorized",
+        reset_known_confirm: "Are you sure you want to relearn all words marked as 'Memorized'?",
+        mark_known: "I know this word",
+        mascot_cheer_known: "Excellent! One less word to study!",
+        learn_complete_all: "Wow! You have mastered the entire vocabulary pool! Let's take a test! 🎉"
     },
     vi: {
         ready: "Sẵn sàng chưa?",
@@ -162,7 +173,16 @@ const I18N_STRINGS = {
         no_vocab_warning: "Không có từ vựng nào để học. Vui lòng thêm từ mới hoặc kiểm tra cài đặt.",
         no_vocab_test_warning: "Không có từ vựng nào hợp lệ để bắt đầu bài kiểm tra.",
         import_placeholder: "Ví dụ:\napple: quả táo\nbanana - quả chuối\ncherry | quả anh đào",
-        import_help: "Định dạng hỗ trợ: Tab, Dấu hai chấm (:), Gạch ngang (-), Dấu gạch đứng (|)"
+        import_help: "Định dạng hỗ trợ: Tab, Dấu hai chấm (:), Gạch ngang (-), Dấu gạch đứng (|)",
+
+        // Flashcard known words keys
+        stats_known: "Đã thuộc",
+        skip_known_vocab: "Bỏ qua từ vựng đã nhớ khi học",
+        reset_known: "Reset từ đã thuộc",
+        reset_known_confirm: "Bạn có chắc chắn muốn học lại từ đầu tất cả các từ đã đánh dấu 'Đã thuộc' không?",
+        mark_known: "Đã thuộc từ này",
+        mascot_cheer_known: "Xuất sắc! Bớt đi một từ cần học rồi nhé!",
+        learn_complete_all: "Wow! Bạn đã chinh phục toàn bộ kho từ vựng này rồi! Hãy bắt đầu làm bài test nhé! 🎉"
     }
 };
 
@@ -340,6 +360,19 @@ function init() {
         // Load last incorrect words
         const savedIncorrect = localStorage.getItem('last_incorrect_ids');
         if (savedIncorrect) currentState.incorrectWords = JSON.parse(savedIncorrect);
+
+        // Load known words from localStorage
+        const savedKnown = localStorage.getItem('vocab_known_words');
+        if (savedKnown) {
+            try {
+                currentState.knownWords = JSON.parse(savedKnown);
+            } catch (e) {
+                console.error("Failed to parse saved known words", e);
+                currentState.knownWords = [];
+            }
+        } else {
+            currentState.knownWords = [];
+        }
         
         // Init Dark Mode
         if (localStorage.getItem('vocab_theme') === 'dark') {
@@ -359,6 +392,9 @@ function init() {
             currentState.viewportMode = savedViewport;
         }
         applyViewportMode(currentState.viewportMode);
+        
+        // Thiết lập tính năng kéo thả cho Mascot
+        setupMascotDraggable();
     } else {
         console.error("VOCAB_DATA not found!");
     }
@@ -381,6 +417,7 @@ function factoryReset() {
         currentState.vocab = [];
         currentState.history = [];
         currentState.incorrectWords = [];
+        currentState.knownWords = [];
         
         // Force immediate clean reload
         window.location.href = window.location.pathname;
@@ -396,6 +433,60 @@ function toggleIgnoreBase(checked) {
     window.location.reload();
 }
 window.toggleIgnoreBase = toggleIgnoreBase;
+
+function saveKnownWords() {
+    localStorage.setItem('vocab_known_words', JSON.stringify(currentState.knownWords));
+}
+
+function toggleSkipKnown(checked) {
+    currentState.langConfig.skipKnown = checked;
+    localStorage.setItem('vocab_lang_config', JSON.stringify(currentState.langConfig));
+    render();
+}
+window.toggleSkipKnown = toggleSkipKnown;
+
+function resetKnownWords() {
+    if (confirm(t('reset_known_confirm'))) {
+        currentState.knownWords = [];
+        localStorage.removeItem('vocab_known_words');
+        triggerMascot('cheer', t('mascot_cheer'));
+        render();
+    }
+}
+window.resetKnownWords = resetKnownWords;
+
+function getActiveLearnVocab() {
+    if (currentState.langConfig.skipKnown) {
+        return currentState.vocab.filter(w => !currentState.knownWords.includes(w.t1.toLowerCase().trim()));
+    }
+    return currentState.vocab;
+}
+
+function markAsKnown(wordT1) {
+    const normT1 = wordT1.toLowerCase().trim();
+    if (!currentState.knownWords.includes(normT1)) {
+        currentState.knownWords.push(normT1);
+        saveKnownWords();
+    }
+    
+    // Kích hoạt Mascot cổ vũ
+    triggerMascot('cheer', t('mascot_cheer_known'));
+    
+    // Chuyển slide mượt mà hoặc hoàn thành học tập
+    const activeVocab = getActiveLearnVocab();
+    if (activeVocab.length === 0) {
+        alert(t('learn_complete_all'));
+        switchMode('home');
+    } else {
+        // Tự động chuyển tiếp
+        if (currentState.currentIndex >= activeVocab.length) {
+            currentState.currentIndex = Math.max(0, activeVocab.length - 1);
+        }
+        currentState.isFlipped = false;
+        render();
+    }
+}
+window.markAsKnown = markAsKnown;
 
 function updateStreak() {
     const today = new Date().toLocaleDateString('vi-VN');
@@ -681,6 +772,10 @@ function renderHome(container) {
         <div class="flex flex-col gap-6">
             <div class="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 text-center glassmorphism">
                 <h2 class="text-3xl font-black text-slate-700 dark:text-slate-100">${t('ready')}</h2>
+                <div class="text-sm font-bold text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-graduation-cap text-indigo-500"></i>
+                    <span>${t('stats_known')}: ${currentState.knownWords.length} / ${currentState.vocab.length} từ (${Math.round((currentState.knownWords.length / (currentState.vocab.length || 1)) * 100)}%)</span>
+                </div>
                 <p class="text-slate-500 dark:text-slate-400 mt-2 mb-6 font-medium">${t('choose_test_size')}</p>
                 
                 <div class="flex justify-center gap-3 mb-8 flex-wrap">
@@ -722,13 +817,19 @@ function renderHome(container) {
                     <label for="ignore-base-checkbox" class="text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">${t('ignore_base_vocab')}</label>
                 </div>
 
+                <div class="flex items-center gap-2 mb-4 ml-1">
+                    <input type="checkbox" id="skip-known-checkbox" onchange="window.toggleSkipKnown(this.checked)" ${currentState.langConfig.skipKnown ? 'checked' : ''} class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="skip-known-checkbox" class="text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">${t('skip_known_vocab')}</label>
+                </div>
+
                 <textarea id="vocab-import-input" class="w-full h-32 p-4 border-2 border-slate-100 dark:border-slate-600 bg-transparent dark:text-white rounded-2xl mb-1 focus:border-indigo-500 outline-none transition resize-y" placeholder="${t('import_placeholder')}"></textarea>
                 <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-4 ml-1 uppercase tracking-tighter">${t('import_help')}</p>
                 <div class="flex justify-between items-center flex-wrap gap-4">
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-wrap">
                         <input type="file" id="excel-upload" accept=".xlsx, .xls, .csv" class="hidden" onchange="window.handleFileUpload(event)">
                         <button onclick="document.getElementById('excel-upload').click()" class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-amber-100 dark:border-amber-800/50" title="Upload Excel/CSV"><i class="fa-solid fa-file-import"></i> Upload Excel</button>
                         <button onclick="window.exportVocabToExcel()" class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-emerald-100 dark:border-emerald-800/50" title="${t('export_excel')}"><i class="fa-solid fa-file-excel"></i> ${t('export_excel')}</button>
+                        <button onclick="window.resetKnownWords()" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-indigo-100 dark:border-indigo-800/50" title="${t('reset_known')}"><i class="fa-solid fa-arrows-rotate"></i> ${t('reset_known')}</button>
                         <button onclick="window.factoryReset()" class="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-4 py-2 rounded-xl font-bold hover:scale-105 transition shadow-sm text-sm border border-slate-200 dark:border-slate-600" title="${t('factory_reset')}"><i class="fa-solid fa-trash-can"></i> ${t('factory_reset')}</button>
                     </div>
                     <button onclick="window.importVocab()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:scale-105 transition shadow-md ml-auto"><i class="fa-solid fa-plus"></i> ${t('add_insert')}</button>
@@ -770,9 +871,11 @@ function renderHome(container) {
 }
 
 function renderLearnMode(container) {
-    if (!currentState.vocab || currentState.vocab.length === 0) {
+    const activeVocab = getActiveLearnVocab();
+    
+    if (!activeVocab || activeVocab.length === 0) {
         container.innerHTML = `
-            <div class="text-center py-20 bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 glassmorphism">
+            <div class="text-center py-20 bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 glassmorphism animate-fade-in">
                 <i class="fa-solid fa-folder-open text-6xl text-slate-200 mb-4 block"></i>
                 <p class="text-slate-500 dark:text-slate-400 font-medium">${t('no_vocab_warning')}</p>
                 <button onclick="switchMode('home')" class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:scale-105 transition">${t('go_home')}</button>
@@ -780,7 +883,13 @@ function renderLearnMode(container) {
         `;
         return;
     }
-    const word = currentState.vocab[currentState.currentIndex];
+    
+    // Ensure currentIndex is in valid range
+    if (currentState.currentIndex >= activeVocab.length) {
+        currentState.currentIndex = Math.max(0, activeVocab.length - 1);
+    }
+    
+    const word = activeVocab[currentState.currentIndex];
     container.innerHTML = `
         <div class="flex flex-col items-center">
             <div class="w-full flex justify-between items-center mb-8">
@@ -788,8 +897,8 @@ function renderLearnMode(container) {
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     ${t('home')}
                 </button>
-                <div class="text-slate-500 font-medium bg-white px-4 py-1 rounded-full border border-slate-200 shadow-sm">
-                    ${t('word_progress', {n: currentState.currentIndex + 1, m: currentState.vocab.length})}
+                <div class="text-slate-500 font-medium bg-white px-4 py-1 rounded-full border border-slate-200 shadow-sm dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600">
+                    ${t('word_progress', {n: currentState.currentIndex + 1, m: activeVocab.length})}
                 </div>
                 <div class="w-20"></div> <!-- Spacer for symmetry -->
             </div>
@@ -807,11 +916,20 @@ function renderLearnMode(container) {
                 </div>
             </div>
 
-            <div class="flex gap-6 mt-12">
-                <button onclick="prevWord()" class="p-5 bg-white rounded-2xl shadow hover:bg-slate-50 transition border border-slate-200 active:scale-90">
-                    <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+            <div class="flex items-center gap-6 mt-12 flex-wrap justify-center animate-fade-in">
+                <!-- Nút Trở lại -->
+                <button onclick="prevWord()" class="p-5 bg-white dark:bg-slate-700 rounded-2xl shadow hover:bg-slate-50 dark:hover:bg-slate-600 transition border border-slate-200 dark:border-slate-600 active:scale-90" title="${t('back')}">
+                    <svg class="w-8 h-8 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
-                <button onclick="nextWord()" class="p-5 bg-indigo-600 rounded-2xl shadow-xl hover:bg-indigo-700 transition active:scale-90">
+                
+                <!-- Nút ĐÃ THUỘC (THÊM MỚI) -->
+                <button onclick="window.markAsKnown('${word.t1.replace(/'/g, "\\'")}')" class="px-6 md:px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 dark:shadow-none hover:scale-105 hover:from-emerald-600 hover:to-teal-600 transition active:scale-95 flex items-center gap-2" title="${t('mark_known')}">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
+                    <span>${t('mark_known')}</span>
+                </button>
+                
+                <!-- Nút Tiếp theo -->
+                <button onclick="nextWord()" class="p-5 bg-indigo-600 rounded-2xl shadow-xl hover:bg-indigo-700 transition active:scale-90" title="${t('next')}">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                 </button>
             </div>
@@ -1093,8 +1211,21 @@ document.addEventListener('keydown', (e) => {
 
 // Helper for learn mode
 function flipCard() { currentState.isFlipped = !currentState.isFlipped; render(); }
-function nextWord() { if (currentState.currentIndex < currentState.vocab.length - 1) { currentState.currentIndex++; currentState.isFlipped = false; render(); } }
-function prevWord() { if (currentState.currentIndex > 0) { currentState.currentIndex--; currentState.isFlipped = false; render(); } }
+function nextWord() {
+    const activeVocab = getActiveLearnVocab();
+    if (currentState.currentIndex < activeVocab.length - 1) {
+        currentState.currentIndex++;
+        currentState.isFlipped = false;
+        render();
+    }
+}
+function prevWord() {
+    if (currentState.currentIndex > 0) {
+        currentState.currentIndex--;
+        currentState.isFlipped = false;
+        render();
+    }
+}
 
 function setTestSize(size) {
     currentState.preferredTestSize = size === 'all' ? 'all' : parseInt(size);
@@ -1458,6 +1589,154 @@ function setupDragAndDrop() {
                 reader.readAsText(file);
             }
         }
+    });
+}
+
+/**
+ * Thiết lập tính năng kéo thả (Drag and Drop) cho Mascot và lưu vị trí
+ */
+function setupMascotDraggable() {
+    const container = document.getElementById('mascot-container');
+    const mascot = document.getElementById('mascot');
+    if (!container || !mascot) return;
+
+    // Thay đổi con trỏ chuột sang grab để gợi ý có thể kéo di chuyển
+    mascot.style.cursor = 'grab';
+
+    // Khôi phục vị trí đã lưu từ localStorage
+    const savedPos = localStorage.getItem('mascot_position');
+    if (savedPos) {
+        try {
+            const pos = JSON.parse(savedPos);
+            // Giới hạn trong viewport để tránh trôi ra ngoài màn hình
+            const maxLeft = window.innerWidth - (container.offsetWidth || 96);
+            const maxTop = window.innerHeight - (container.offsetHeight || 96);
+            const left = Math.max(0, Math.min(pos.left, maxLeft));
+            const top = Math.max(0, Math.min(pos.top, maxTop));
+
+            container.style.bottom = 'auto';
+            container.style.right = 'auto';
+            container.style.left = left + 'px';
+            container.style.top = top + 'px';
+        } catch (e) {
+            console.error("Lỗi khôi phục vị trí mascot:", e);
+        }
+    }
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    const onStart = (e) => {
+        // Tránh drag nếu click trúng nút bấm con bên trong nếu có
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+
+        let clientX, clientY;
+        if (e.type === 'touchstart') {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            e.preventDefault(); // Ngăn trình duyệt kéo ảnh mặc định
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        isDragging = true;
+        mascot.style.cursor = 'grabbing';
+
+        const rect = container.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        startX = clientX;
+        startY = clientY;
+
+        // Vô hiệu hóa hiệu ứng chuyển cảnh của CSS transition trong khi kéo để di chuyển mượt mà
+        container.style.transition = 'none';
+
+        if (e.type === 'touchstart') {
+            document.addEventListener('touchmove', onMove, { passive: false });
+            document.addEventListener('touchend', onEnd);
+        } else {
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onEnd);
+        }
+    };
+
+    const onMove = (e) => {
+        if (!isDragging) return;
+
+        let clientX, clientY;
+        if (e.type === 'touchmove') {
+            e.preventDefault(); // Chặn cuộn trang trên mobile khi đang kéo mascot
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+
+        const containerWidth = container.offsetWidth || 96;
+        const containerHeight = container.offsetHeight || 96;
+
+        // Giới hạn di chuyển trong viewport màn hình
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - containerWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - containerHeight));
+
+        container.style.bottom = 'auto';
+        container.style.right = 'auto';
+        container.style.left = newLeft + 'px';
+        container.style.top = newTop + 'px';
+    };
+
+    const onEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        mascot.style.cursor = 'grab';
+
+        // Bật lại transition CSS mặc định
+        container.style.transition = '';
+
+        if (e.type === 'touchend') {
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('touchend', onEnd);
+        } else {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onEnd);
+        }
+
+        // Lưu vị trí cuối cùng vào localStorage
+        const rect = container.getBoundingClientRect();
+        localStorage.setItem('mascot_position', JSON.stringify({
+            left: rect.left,
+            top: rect.top
+        }));
+    };
+
+    mascot.addEventListener('mousedown', onStart);
+    mascot.addEventListener('touchstart', onStart, { passive: false });
+
+    // Tự động kiểm tra giữ mascot trong viewport khi resize màn hình
+    window.addEventListener('resize', () => {
+        if (!container.style.left) return;
+        
+        const rect = container.getBoundingClientRect();
+        const containerWidth = container.offsetWidth || 96;
+        const containerHeight = container.offsetHeight || 96;
+
+        const newLeft = Math.max(0, Math.min(rect.left, window.innerWidth - containerWidth));
+        const newTop = Math.max(0, Math.min(rect.top, window.innerHeight - containerHeight));
+
+        container.style.left = newLeft + 'px';
+        container.style.top = newTop + 'px';
     });
 }
 
